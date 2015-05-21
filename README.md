@@ -31,4 +31,5 @@ ProtocolInfo protocolInfo = new ProtocolInfo("_ClickBoard", TransportProtcolType
 server = new Server(serverInfo, protocolInfo);
 server.PublishAndListen();
 ```
-[logo]: https://github.com/hughbe/Cross-Platform-Bonjour-Connectivity-and-Communication-Library/ConnComm_Windows/Screenshot.png" "Evidence"
+
+[logo]: https://github.com/hughbe/Cross-Platform-Bonjour-Connectivity-and-Communication-Library/blob/master/ConnComm_Windows/Screenshot.png" "Evidence"
