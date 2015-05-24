@@ -1,17 +1,16 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Communicate")]
-[assembly: AssemblyDescription("A library that aims to make it easy to connect iOS, Mac and Windows devices to each other and send data in both directions between devices")]
+[assembly: AssemblyTitle("ScreenCaptureExample")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Communicate")]
-[assembly: AssemblyCopyright("Copyright ©  2015 Hugh Bellamy")]
+[assembly: AssemblyProduct("ScreenCaptureExample")]
+[assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -21,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("745a65b1-3c96-4de9-bdeb-7c6d476b45ea")]
+[assembly: Guid("59923e61-73c0-4ba7-932b-51b9ca58ce16")]
 
 // Version information for an assembly consists of the following four values:
 //
