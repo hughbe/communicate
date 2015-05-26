@@ -61,33 +61,38 @@ namespace Communicate.Server
         }
 
         #region Ending
+        
+        /// <summary>
+        /// Disconnects a particular client from the server
+        /// </summary>
+        /// <param name="client">The client to disconnect</param>
+        public void DisconnectClient(ConnectedClient client)
+        {
+            if (client != null)
+            {
+                client.Disconnect();
+            }
+            if (_connectedClients != null)
+            {
+                if (_connectedClients.Contains(client))
+                {
+                    _connectedClients.Remove(client);
+                }
+            }
+        }
 
         /// <summary>
         /// Disconnects all connected clients from the server
         /// </summary>
-        public void DisconnectAll()
+        public void DisconnectAllClients()
         {
             if (_connectedClients != null)
             {
                 foreach (ConnectedClient client in _connectedClients)
                 {
                     client.Disconnect();
-                    client.Dispose();
                 }
                 _connectedClients.Clear();
-            }
-        }
-
-        /// <summary>
-        /// Disconnects a particular client from the server
-        /// </summary>
-        /// <param name="client"></param>
-        public void DisconnectClient(ConnectedClient client)
-        {
-            if (_connectedClients != null && client != null)
-            {
-                client.Disconnect();
-                _connectedClients.Remove(client);
             }
         }
 
@@ -119,20 +124,20 @@ namespace Communicate.Server
             }
         }
 
+        #endregion
+
         /// <summary>
         /// This overrides the ToString method of this object to give more information for debugging use
         /// </summary>
         /// <returns>The information about the connected clients in a readable format</returns>
         public override string ToString()
         {
-            return "Clients: " + _connectedClients.ToString();
+            return "Connected Clients: " + _connectedClients.ToString();
         }
-
-        #endregion
 
         IEnumerator<ConnectedClient> IEnumerable<ConnectedClient>.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return (IEnumerator<ConnectedClient>)GetEnumerator();
         }
     }
 

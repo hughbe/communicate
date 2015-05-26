@@ -72,7 +72,7 @@ namespace Communicate.Server
         /// <returns>The information about the server in a readable format</returns>
         public override string ToString()
         {
-            return "ServerInfo: name = " + _readableName + "; port = " + _port.ToString() + "; txt records = " + _TXTRecordList.ToString();
-        }
+            return "ServerInfo: name = " + _readableName + "; port = " + _port.ToString() + "; TXT records = " + _TXTRecordList.ToString();
+        }   
     }
 }

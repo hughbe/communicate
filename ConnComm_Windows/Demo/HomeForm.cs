@@ -28,5 +28,10 @@ namespace Demo
             DemoServer server = new DemoServer();
             server.Show();
         }
+
+        private void HomeForm_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

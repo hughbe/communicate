@@ -73,7 +73,7 @@ namespace ScreenCaptureExample
         }
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (listBox1.SelectedIndex >= 0 && listBox1.SelectedIndex < client.Services.Count && !client.Connecting && !client.Connected)
+            if (listBox1.SelectedIndex >= 0 && listBox1.SelectedIndex < client.Services.Count)
             {
                 NetService service = client.Services[listBox1.SelectedIndex];
                 client.ConnectToService(service);

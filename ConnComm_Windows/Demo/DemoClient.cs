@@ -93,24 +93,24 @@ namespace Demo
             //Console.WriteLine("CLIENT: Disconnected");
         }
         
-        private void ClientDidReceiveData(Client client, byte[] data, string footerContent, DataType dataType)
+        private void ClientDidReceiveData(Client client, CommunicationData data)
         {
-            Console.WriteLine("CLIENT: received data: " + Encoding.ASCII.GetString(data));
+            Console.WriteLine("CLIENT: received data: " + Encoding.ASCII.GetString(data.DataContent.GetBytes()));
         }
 
-        private void ClientDidSendData(Client client, byte[] data)
+        private void ClientDidSendData(Client client, CommunicationData data)
         {
             //Console.WriteLine("CLIENT: Sent data");
         }
 
-        private void ClientDidNotSendData(Client client, byte[] data, Exception exception)
+        private void ClientDidNotSendData(Client client, CommunicationData data, Exception exception)
         {
             //Console.WriteLine("CLIENT: Failed to send: " + Encoding.ASCII.GetString(data) + "; Reason: " + exception.ToString());
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (listBox1.SelectedIndex >= 0 && listBox1.SelectedIndex < client.Services.Count && !client.Connecting && !client.Connected) 
+            if (listBox1.SelectedIndex >= 0 && listBox1.SelectedIndex < client.Services.Count && (client.ConnectedState == ClientConnectedState.NotConnected || client.ConnectedState == ClientConnectedState.ErrorConnecting || client.ConnectedState == ClientConnectedState.Disconnected)) 
             {
                 NetService service = client.Services[listBox1.SelectedIndex];
                 client.ConnectToService(service);

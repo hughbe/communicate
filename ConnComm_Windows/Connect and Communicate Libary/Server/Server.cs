@@ -13,19 +13,23 @@ namespace Communicate.Server
 {
     #region Top Level Delegates
 
+    public delegate void ServerDidStartPublishing(Server server);
     public delegate void ServerDidPublish(Server server);
     public delegate void ServerDidNotPublish(Server server, Exception exception);
     public delegate void ServerDidUnPublish(Server server);
+
     public delegate void ServerDidStartListening(Server server);
     public delegate void ServerDidNotStartListening(Server server, Exception exception);
     public delegate void ServerDidStopListening(Server server);
+
     public delegate void ServerDidStartConnectingToClient(Server server, ConnectedClient client);
     public delegate void ServerDidConnectToClient(Server server, ConnectedClient client);
     public delegate void ServerDidNotConnectToClient(Server server, ConnectedClient client, Exception exception);
     public delegate void ServerDidDisconnectFromClient(Server server, ConnectedClient client);
-    public delegate void ServerDidReceiveDataFromClient(Server server, ConnectedClient client, byte[] data, string footerContents, DataType dataType);
-    public delegate void ServerDidSendDataToClient(Server server, byte[] data, ConnectedClient client);
-    public delegate void ServerDidNotSendDataToClient(Server server, byte[] data, Exception exception, ConnectedClient client);
+        
+    public delegate void ServerDidReceiveDataFromClient(Server server, ConnectedClient client, CommunicationData data);
+    public delegate void ServerDidSendDataToClient(Server server, CommunicationData data, ConnectedClient client);
+    public delegate void ServerDidNotSendDataToClient(Server server, CommunicationData data, Exception exception, ConnectedClient client);
 
     #endregion
 
@@ -38,6 +42,24 @@ namespace Communicate.Server
 
         #region Private Variables
 
+        private ServerDidStartPublishing _serverDidStartPublishing;
+        private ServerDidPublish _serverDidPublish;
+        private ServerDidNotPublish _serverDidNotPublish;
+        private ServerDidUnPublish _serverDidUnPublish;
+
+        private ServerDidStartListening _serverDidStartListening;
+        private ServerDidNotStartListening _serverDidNotStartListening;
+        private ServerDidStopListening _serverDidStopListening;
+
+        private ServerDidStartConnectingToClient _serverDidStartConnectingToClient;
+        private ServerDidConnectToClient _serverDidConnectToClient;
+        private ServerDidNotConnectToClient _serverDidNotConnectToClient;
+        private ServerDidDisconnectFromClient _serverDidDisconnectFromClient;
+
+        private ServerDidReceiveDataFromClient _serverDidReceiveDataFromClient;
+        private ServerDidSendDataToClient _serverDidSendDataToClient;
+        private ServerDidNotSendDataToClient _serverDidNotSendDataToClient;
+
         private ServerInfo _serverInfo;
         private ProtocolInfo _protocolInfo;
 
@@ -46,14 +68,165 @@ namespace Communicate.Server
 
         private ConnectedClientsCollection _connectedClients;
 
-        private bool _listening;
-
-        private bool _publishing;
-        private bool _published;
+        private ServerPublishingState _publishingState;
+        private ServerListeningState _listeningState;
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// The delegate method called when the server starts to publish a service on the network
+        /// </summary>
+        /// <param name="server">The server that started to publish the service</param>
+        public ServerDidStartPublishing ServerDidStartPublishing
+        {
+            get { return _serverDidStartPublishing; }
+            set { _serverDidStartPublishing = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the server publishes a service on the network successfully
+        /// </summary>
+        /// <param name="server">The server that published the service</param>
+        public ServerDidPublish ServerDidPublish
+        {
+            get { return _serverDidPublish; }
+            set { _serverDidPublish = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the server fails to publishe a service on the network
+        /// </summary>
+        /// <param name="server">The server that failed to publish the service</param>
+        /// <param name="exception">The reason why the service failed to publish</param>
+        public ServerDidNotPublish ServerDidNotPublish
+        {
+            get { return _serverDidNotPublish; }
+            set { _serverDidNotPublish = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the server unpublishes the service from the network
+        /// </summary>
+        /// <param name="server">The server that unpublished the service</param>
+        public ServerDidUnPublish ServerDidUnPublish
+        {
+            get { return _serverDidUnPublish; }
+            set { _serverDidUnPublish = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the server starts listening for a connection request to it
+        /// </summary>
+        /// <param name="server">The server listening for a connection request</param>
+        public ServerDidStartListening ServerDidStartListening
+        {
+            get { return _serverDidStartListening; }
+            set { _serverDidStartListening = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the server fails to start listening for a connection request to it
+        /// </summary>
+        /// <param name="server">The server that failed to start listening for a connection request</param>
+        /// <param name="exception">The reason why the server failed to start listening for a connection request</param>
+        public ServerDidNotStartListening ServerDidNotStartListening
+        {
+            get { return _serverDidNotStartListening; }
+            set { _serverDidNotStartListening = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the server stops listening for a connection request to it
+        /// </summary>
+        /// <param name="server">The server that stopped listening for a connection request</param>
+        public ServerDidStopListening ServerDidStopListening
+        {
+            get { return _serverDidStopListening; }
+            set { _serverDidStopListening = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the server starts to initiating a connection with an incoming connection request
+        /// </summary>
+        /// <param name="server">The server that is attempting to initiate the connection</param>
+        /// <param name="client">The client to which did start connecting</param>
+        public ServerDidStartConnectingToClient ServerDidStartConnectingToClient
+        {
+            get { return _serverDidStartConnectingToClient; }
+            set { _serverDidStartConnectingToClient = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the server successfully connects to a device on the network
+        /// </summary>
+        /// <param name="server">The server that successfully connected</param>
+        /// <param name="client">The client to which the server connected</param>
+        public ServerDidConnectToClient ServerDidConnectToClient
+        {
+            get { return _serverDidConnectToClient; }
+            set { _serverDidConnectToClient = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the server fails to connect to a device on the network
+        /// </summary>
+        /// <param name="server">The server that failed to connect</param>
+        /// <param name="client">The client to which the server failed to connect</param>
+        /// <param name="exception">The reason why the server failed to connect</param>
+        public ServerDidNotConnectToClient ServerDidNotConnectToClient
+        {
+            get { return _serverDidNotConnectToClient; }
+            set { _serverDidNotConnectToClient = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the server disconnects from a device on the network
+        /// </summary>
+        /// <param name="server">The server that disconnected from a device on the network</param>
+        /// <param name="client">The client that the server disconnected from</param>
+        public ServerDidDisconnectFromClient ServerDidDisconnectFromClient
+        {
+            get { return _serverDidDisconnectFromClient; }
+            set { _serverDidDisconnectFromClient = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the server receives contentData from a device it is connected to
+        /// </summary>
+        /// <param name="server">The server that received the contentData</param>
+        /// <param name="contentData">The byte array of the contentData received. It can be encoded into a string or image etc.</param>
+        /// <param name="numberOfBytesTransferred">The number of bytes transferred from client to server</param>
+        /// <param name="client">The client that sent the contentData</param>
+        public ServerDidReceiveDataFromClient ServerDidReceiveDataFromClient
+        {
+            get { return _serverDidReceiveDataFromClient; }
+            set { _serverDidReceiveDataFromClient = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the server sends contentData to a connected client
+        /// </summary>
+        /// <param name="contentData">The byte array of the contentData sent. It can be encoded into a string or image etc.</param>
+        /// <param name="client">The client to which the contentData was sent</param>
+        public ServerDidSendDataToClient ServerDidSendDataToClient
+        {
+            get { return _serverDidSendDataToClient; }
+            set { _serverDidSendDataToClient = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the server fails to send contentData to a connected client
+        /// </summary>
+        /// <param name="contentData">The byte array of the contentData that failed to be sent. It can be encoded into a string or image etc.</param>
+        /// <param name="exception">The reason for the failure to send the contentData</param>
+        /// <param name="client">The client to which sending contentData failed</param>
+        public ServerDidNotSendDataToClient ServerDidNotSendDataToClient
+        {
+            get { return _serverDidNotSendDataToClient; }
+            set { _serverDidNotSendDataToClient = value; }
+        }
 
         /// <summary>
         /// The service currently published on the network. This may be null
@@ -96,123 +269,21 @@ namespace Communicate.Server
         }
 
         /// <summary>
-        /// A value that indicates whether the server is currently listening for incoming connection requests from other devices on the network
+        /// A value that indicates the server's publishing state
         /// </summary>
-        public bool Listening
+        public ServerPublishingState PublishingState
         {
-            get { return _listening; }
+            get { return _publishingState; }
         }
         
         /// <summary>
-        /// A value that indicates whether the server is currently in the process of publishing itself on the network
+        /// A value that indicates the server's listening state
         /// </summary>
-        public bool Publishing
+        public ServerListeningState ListeningState
         {
-            get { return _publishing; }
+            get { return _listeningState; }
         }
         
-        /// <summary>
-        /// A value that indicates whether the server has published itself on the network
-        /// </summary>
-        public bool Published
-        {
-            get { return _published; }
-        }
-
-        #endregion 
-
-        #region Delegates
-
-        /// <summary>
-        /// The delegate method called when the server publishes a service on the network successfully
-        /// </summary>
-        /// <param name="server">The server that published the service</param>
-        public ServerDidPublish ServerDidPublish;
-
-        /// <summary>
-        /// The delegate method called when the server fails to publishe a service on the network
-        /// </summary>
-        /// <param name="server">The server that failed to publish the service</param>
-        /// <param name="exception">The reason why the service failed to publish</param>
-        public ServerDidNotPublish ServerDidNotPublish;
-
-        /// <summary>
-        /// The delegate method called when the server unpublishes the service from the network
-        /// </summary>
-        /// <param name="server">The server that unpublished the service</param>
-        public ServerDidUnPublish ServerDidUnPublish;
-
-        /// <summary>
-        /// The delegate method called when the server starts listening for a connection request to it
-        /// </summary>
-        /// <param name="server">The server listening for a connection request</param>
-        public ServerDidStartListening ServerDidStartListening;
-
-        /// <summary>
-        /// The delegate method called when the server fails to start listening for a connection request to it
-        /// </summary>
-        /// <param name="server">The server that failed to start listening for a connection request</param>
-        /// <param name="exception">The reason why the server failed to start listening for a connection request</param>
-        public ServerDidNotStartListening ServerDidNotStartListening;
-
-        /// <summary>
-        /// The delegate method called when the server stops listening for a connection request to it
-        /// </summary>
-        /// <param name="server">The server that stopped listening for a connection request</param>
-        public ServerDidStopListening ServerDidStopListening;
-
-        /// <summary>
-        /// The delegate method called when the server starts to initiating a connection with an incoming connection request
-        /// </summary>
-        /// <param name="server">The server that is attempting to initiate the connection</param>
-        /// <param name="client">The client to which did start connecting</param>
-        public ServerDidStartConnectingToClient ServerDidStartConnectingToClient;
-
-        /// <summary>
-        /// The delegate method called when the server successfully connects to a device on the network
-        /// </summary>
-        /// <param name="server">The server that successfully connected</param>
-        /// <param name="client">The client to which the server connected</param>
-        public ServerDidConnectToClient ServerDidConnectToClient;
-
-        /// <summary>
-        /// The delegate method called when the server fails to connect to a device on the network
-        /// </summary>
-        /// <param name="server">The server that failed to connect</param>
-        /// <param name="client">The client to which the server failed to connect</param>
-        /// <param name="exception">The reason why the server failed to connect</param>
-        public ServerDidNotConnectToClient ServerDidNotConnectToClient;
-
-        /// <summary>
-        /// The delegate method called when the server disconnects from a device on the network
-        /// </summary>
-        /// <param name="server">The server that disconnected from a device on the network</param>
-        /// <param name="client">The client that the server disconnected from</param>
-        public ServerDidDisconnectFromClient ServerDidDisconnectFromClient;
-
-        /// <summary>
-        /// The delegate method called when the server receives contentData from a device it is connected to
-        /// </summary>
-        /// <param name="server">The server that received the contentData</param>
-        /// <param name="contentData">The byte array of the contentData received. It can be encoded into a string or image etc.</param>
-        /// <param name="numberOfBytesTransferred">The number of bytes transferred from client to server</param>
-        /// <param name="client">The client that sent the contentData</param>
-        public ServerDidReceiveDataFromClient ServerDidReceiveDataFromClient;
-
-        /// <summary>
-        /// The delegate method called when the server sends contentData to a connected client
-        /// </summary>
-        /// <param name="contentData">The byte array of the contentData sent. It can be encoded into a string or image etc.</param>
-        /// <param name="client">The client to which the contentData was sent</param>
-        public ServerDidSendDataToClient ServerDidSendDataToClient;
-
-        /// <summary>
-        /// The delegate method called when the server fails to send contentData to a connected client
-        /// </summary>
-        /// <param name="contentData">The byte array of the contentData that failed to be sent. It can be encoded into a string or image etc.</param>
-        /// <param name="exception">The reason for the failure to send the contentData</param>
-        /// <param name="client">The client to which sending contentData failed</param>
-        public ServerDidNotSendDataToClient ServerDidNotSendDataToClient;
 
         #endregion
 
@@ -228,6 +299,9 @@ namespace Communicate.Server
             _serverInfo = serverInfo;
             _protocolInfo = protocolInfo;
             _connectedClients = new ConnectedClientsCollection();
+
+            _publishingState = ServerPublishingState.NotPublished;
+            _listeningState = ServerListeningState.NotListening;
         }
 
         /// <summary>
@@ -252,54 +326,28 @@ namespace Communicate.Server
         /// </summary>
         public void Publish()
         {
-            _publishing = true;
-
+            _publishingState = ServerPublishingState.Publishing;
             try
             {
-                _publishedService = new NetService(_protocolInfo.Domain, _protocolInfo.SerializeType(), _serverInfo.ReadableName, _serverInfo.Port);
+                _publishedService = new NetService(_protocolInfo.Domain, _protocolInfo.SerializeType(false), _serverInfo.ReadableName, _serverInfo.Port);
 
-                _publishedService.TXTRecordData = NetService.DataFromTXTRecordDictionary(_serverInfo.TXTRecordList.Serialize());
+                _publishedService.TXTRecordData = _serverInfo.TXTRecordList.Serialize();
 
                 _publishedService.DidPublishService += new NetService.ServicePublished(DidPublishService);
                 _publishedService.DidNotPublishService += new NetService.ServiceNotPublished(DidNotPublishService);
 
                 _publishedService.Publish();
+                if (_serverDidStartPublishing != null)
+                {
+                    _serverDidStartPublishing(this);
+                }
             }
             catch (Exception exception)
             {
-                _publishing = false;
-                if (ServerDidNotPublish != null)
+                _publishingState = ServerPublishingState.ErrorPublishing;
+                if (_serverDidNotPublish != null)
                 {
-                    ServerDidNotPublish(this, exception);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Opens a socket using the information given using the ProtocolInfo and ServerInfo objects used to construct the Server object to listen and handle any incoming connection requests
-        /// </summary>
-        public void StartListening()
-        {
-            _listening = true;
-            try
-            {
-                _listeningSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                _listeningSocket.Bind(new IPEndPoint(IPAddress.Any, _serverInfo.Port));
-                _listeningSocket.Listen(10);
-                SocketAsyncEventArgs e = new SocketAsyncEventArgs();
-                e.Completed += AcceptCallback;
-                _listeningSocket.AcceptAsync(e);
-                if (ServerDidStartListening != null)
-                {
-                    ServerDidStartListening(this);
-                }
-            }
-            catch (Exception ex)
-            {
-                _listening = false;
-                if (ServerDidNotStartListening != null)
-                {
-                    ServerDidNotStartListening(this, ex);
+                    _serverDidNotPublish(this, exception);
                 }
             }
         }
@@ -310,12 +358,11 @@ namespace Communicate.Server
         /// <param name="service">The service that was published on the network</param>
         private void DidPublishService(NetService service)
         {
-            _publishing = false;
-            _published = true;
+            _publishingState = ServerPublishingState.Published;
             _publishedService = service;
-            if (ServerDidPublish != null)
+            if (_serverDidPublish != null)
             {
-                ServerDidPublish(this);
+                _serverDidPublish(this);
             }
         }
 
@@ -326,57 +373,73 @@ namespace Communicate.Server
         /// <param name="exception">The reason why the service failed to publish</param>
         private void DidNotPublishService(NetService service, DNSServiceException exception)
         {
-            _publishing = false;
-            _published = false;
-            if (ServerDidNotPublish != null)
+            _publishingState = ServerPublishingState.ErrorPublishing;
+            if (_serverDidNotPublish != null)
             {
-                ServerDidNotPublish(this, exception);
+                _serverDidNotPublish(this, exception);
             }
         }
 
         /// <summary>
-        /// The delegate method called when the server successfully accepts a connection request from a device on the network and opens a socket to send and receive contentData streams between the connected devices
+        /// Opens a socket using the information given using the ProtocolInfo and ServerInfo objects used to construct the Server object to listen and handle any incoming connection requests
         /// </summary>
-        /// <param name="sender">The socket that connected to the device on the network</param>
-        /// <param name="e">The information about the connection of the server to a device on the network</param>
-        private void AcceptCallback(object sender, SocketAsyncEventArgs e)
+        public void StartListening()
         {
-            ConnectedClient client = new ConnectedClient(this, e.AcceptSocket);
-            client.State = ClientState.Connecting;
-            if (ServerDidStartConnectingToClient != null)
-            {
-                ServerDidStartConnectingToClient(this, client);
-            }
-
-            Socket listenSocket = (Socket)sender;
+            _listeningState = ServerListeningState.Listening;
             try
             {
-                client.StartReceiving();
+                TcpListener listener = new TcpListener(IPAddress.Any, _serverInfo.Port);
+                listener.Start(10);
+                listener.BeginAcceptSocket(new AsyncCallback(ListenerAcceptSocketCallback), listener);
+                if (_serverDidStartListening != null)
+                {
+                    _serverDidStartListening(this);
+                }
+            }
+            catch (Exception ex)
+            {
+                _listeningState = ServerListeningState.ErrorListening;
+                if (_serverDidNotStartListening != null)
+                {
+                    _serverDidNotStartListening(this, ex);
+                }
+            }
+        }
 
+        // Process the client connection. 
+        public void ListenerAcceptSocketCallback(IAsyncResult ar)
+        {
+            // Get the listener that handles the client request.
+            TcpListener listener = (TcpListener)ar.AsyncState;
+
+            Socket clientSocket = listener.EndAcceptSocket(ar);
+
+            // Process the connection here. (Add the client to a  
+            // server table, read data, etc.)
+            Console.WriteLine("Client connected completed");
+
+            ConnectedClient client = new ConnectedClient(this, clientSocket);
+            // Signal the calling thread to continue.
+            if (_serverDidStartConnectingToClient != null)
+            {
+                _serverDidStartConnectingToClient(this, client);
+            }
+
+            try
+            {
                 client.State = ClientState.Connected;
                 this.ConnectedClients.AddClient(client);
-                if (ServerDidConnectToClient != null)
-                {
-                    ServerDidConnectToClient(this, client);
-                }
             }
             catch (Exception exception)
             {
                 client.State = ClientState.NotConnected;
-                if (ServerDidNotConnectToClient != null)
+                if (_serverDidNotConnectToClient != null)
                 {
-                    ServerDidNotConnectToClient(this, client, exception);
+                    _serverDidNotConnectToClient(this, client, exception);
                 }
             }
-            finally
-            {
-                e.AcceptSocket = null; // to enable reuse
-            }
-            try
-            {
-                listenSocket.AcceptAsync(e);
-            }
-            catch { }
+
+            listener.BeginAcceptSocket(new AsyncCallback(ListenerAcceptSocketCallback), listener);
         }
                 
         #endregion
@@ -401,7 +464,16 @@ namespace Communicate.Server
         /// <param name="encoding">The encoding of the string to send to the client</param>
         public void SendStringToAllClients(string stringToSend, Encoding encoding)
         {
-            SendDataToAllClients(DataSerializer.StringToByteArray(stringToSend, encoding));
+            SendStringToClient(stringToSend, encoding, null);
+        }
+
+        /// <summary>
+        /// Sends an untitled image to all clients
+        /// </summary>
+        /// <param name="image">The image to send</param>
+        public void SendImageToClient(Image image)
+        {
+            SendImageToAllClients(image, "Untitled");
         }
 
         /// <summary>
@@ -411,7 +483,7 @@ namespace Communicate.Server
         /// <param name="name">The name of the image to send</param>
         public void SendImageToAllClients(Image image, string name)
         {
-            SendDataToAllClients(DataSerializer.ImageToByteArray(image, name));
+            SendImageToClient(image, name, null);
         }
 
         /// <summary>
@@ -420,25 +492,61 @@ namespace Communicate.Server
         /// <param name="filePath">The path of the file to send</param>
         public void SendFileToAllClients(string filePath)
         {
-            SendDataToAllClients(File.ReadAllBytes(filePath));
+            SendFileToAllClients(filePath, Path.GetFileName(filePath));
+        }
+
+        /// <summary>
+        /// Sends a file to all clients
+        /// </summary>
+        /// <param name="filePath">The path of the file to send</param>
+        /// <param name="name">The name of the file to send</param>
+        public void SendFileToAllClients(string filePath, string name)
+        {
+            SendFileToClient(filePath, name, null);
+        }
+        /// <summary>
+        /// Sends a dictionary encoded in JSON to all clients
+        /// </summary>
+        /// <param name="dictionary">The dictionary to send</param>
+        public void SendDictionaryToAllClients(Dictionary<object, object> dictionary)
+        {
+            SendDictionary(dictionary, null);
+        }
+
+        /// <summary>
+        /// Sends an array encoded in JSON to all clients
+        /// </summary>
+        /// <param name="array">The array to send</param>
+        public void SendArrayToAllClients(List<object> array)
+        {
+            SendArray(array, null);
+        }
+
+        /// <summary>
+        /// Sends a JSON string to all clients
+        /// </summary>
+        /// <param name="JSONString">The JSON string to send</param>
+        public void SendJSONString(string JSONString)
+        {
+            SendJSONString(JSONString, null);
         }
         
         /// <summary>
-        /// Sends contentData to all clients
+        /// Sends data to all clients
         /// </summary>
-        /// <param name="dataToSend">The contentData to send to the client</param>
+        /// <param name="dataToSend">The data to send</param>
         public void SendDataToAllClients(byte[] dataToSend) 
         {
             SendDataToClient(dataToSend, null);
         }
 
         /// <summary>
-        /// Sends contentData to all clients
+        /// Sends communication to all clients
         /// </summary>
-        /// <param name="dataList">The contentData list to send to the client</param>
-        public void SendDataToAllClients(Collection<byte[]> dataList)
+        /// <param name="data">The communication data to send</param>
+        public void SendDataToAllClients(CommunicationData data)
         {
-            SendDataToClient(dataList, null);
+            SendDataToClient(data, null);
         }
 
         #endregion
@@ -450,7 +558,7 @@ namespace Communicate.Server
         /// <param name="stringToSend">The string to send to the client using ASCII encoding</param>
         public void SendStringToClient(string stringToSend, ConnectedClient client)
         {
-            SendDataToClient(DataSerializer.StringToByteArray(stringToSend, Encoding.ASCII), client);
+            SendStringToClient(stringToSend, Encoding.ASCII, client);
         }
 
         /// <summary>
@@ -461,7 +569,37 @@ namespace Communicate.Server
         /// <param name="client">The client to send the string to</param>
         public void SendStringToClient(string stringToSend, Encoding encoding, ConnectedClient client)
         {
-            SendDataToClient(DataSerializer.StringToByteArray(stringToSend, encoding), client);
+            if (client != null)
+            {
+                client.ConnectionHandler.SendString(stringToSend, encoding);
+            }
+            else
+            {
+                foreach (ConnectedClient connectedClient in _connectedClients)
+                {
+                    connectedClient.ConnectionHandler.SendString(stringToSend, encoding);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sends an untitled image to a client
+        /// </summary>
+        /// <param name="image">The image to send</param>
+        /// <param name="client">The client to send the image to</param>
+        public void SendImageToClient(Image image, ConnectedClient client)
+        {
+            if (client != null)
+            {
+                client.ConnectionHandler.SendImage(image, "Untitled");
+            }
+            else
+            {
+                foreach (ConnectedClient connectedClient in _connectedClients)
+                {
+                    connectedClient.ConnectionHandler.SendImage(image, "Untitled");
+                }
+            }
         }
 
         /// <summary>
@@ -472,53 +610,145 @@ namespace Communicate.Server
         /// <param name="client">The client to send the image to</param>
         public void SendImageToClient(Image image, string name, ConnectedClient client)
         {
-            SendDataToClient(DataSerializer.ImageToByteArray(image, name), client);
+            if (client != null)
+            {
+                client.ConnectionHandler.SendImage(image, name);
+            }
+            else
+            {
+                foreach (ConnectedClient connectedClient in _connectedClients)
+                {
+                    connectedClient.ConnectionHandler.SendImage(image, name);
+                }
+            }
         }
 
         /// <summary>
         /// Sends a file to a client
         /// </summary>
-        /// <param name="filePath">The path of the file to send to the server</param>
+        /// <param name="filePath">The path of the file to send</param>
         /// <param name="client">The client to send the file to</param>
         public void SendFileToClient(string filePath, ConnectedClient client)
         {
-            SendDataToClient(File.ReadAllBytes(filePath), client);
+            SendFileToClient(filePath, client);
         }
 
         /// <summary>
-        /// Sends contentData to a client
+        /// Sends a file to a client
         /// </summary>
-        /// <param name="dataToSend">The contentData to send to the client</param>
-        /// <param name="client">The client to send the contentData to</param>
-        public void SendDataToClient(byte[] dataToSend, ConnectedClient client)
+        /// <param name="filePath">The path of the file to send</param>
+        /// <param name="client">The client to send the file to</param>
+        public void SendFileToClient(string filePath, string name, ConnectedClient client)
         {
-            Collection<byte[]> dataList = DataSerializer.DataToByteArray(dataToSend);
             if (client != null)
             {
-                client.SendData(dataList);
+                client.ConnectionHandler.SendFile(filePath, name);
             }
             else
             {
-                foreach(ConnectedClient connectedClient in _connectedClients) {
-                    connectedClient.SendData(dataList);
+                foreach (ConnectedClient connectedClient in _connectedClients)
+                {
+                    connectedClient.ConnectionHandler.SendFile(filePath, name);
                 }
             }
         }
 
-        private void SendDataToClient(Collection<byte[]> dataList, ConnectedClient client)
+        /// <summary>
+        /// Sends a dictionary encoded in JSON to a client
+        /// </summary>
+        /// <param name="dictionary">The dictionary to send</param>
+        /// <param name="client">The client to send the dictionary to</param>
+        public void SendDictionary(Dictionary<object, object> dictionary, ConnectedClient client)
         {
-            if (dataList.Count >= 3)
+            if (client != null)
             {
-                if (client != null)
+                client.ConnectionHandler.SendDictionary(dictionary);
+            }
+            else
+            {
+                foreach (ConnectedClient connectedClient in _connectedClients)
                 {
-                    client.SendData(dataList);
+                    connectedClient.ConnectionHandler.SendDictionary(dictionary);
                 }
-                else
+            }
+        }
+
+        /// <summary>
+        /// Sends an array encoded in JSON to a client
+        /// </summary>
+        /// <param name="array">The array to send</param>
+        /// <param name="client">The client to send the array to</param>
+        public void SendArray(List<object> array, ConnectedClient client)
+        {
+            if (client != null)
+            {
+                client.ConnectionHandler.SendArray(array);
+            }
+            else
+            {
+                foreach (ConnectedClient connectedClient in _connectedClients)
                 {
-                    foreach (ConnectedClient connectedClient in _connectedClients)
-                    {
-                        connectedClient.SendData(dataList);
-                    }
+                    connectedClient.ConnectionHandler.SendArray(array);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sends a JSON string to a client
+        /// </summary>
+        /// <param name="JSONString">The JSON string to send</param>
+        /// <param name="client">The client to send the JSON string to</param>
+        public void SendJSONString(string JSONString, ConnectedClient client)
+        {
+            if (client != null)
+            {
+                client.ConnectionHandler.SendJSONString(JSONString);
+            }
+            else
+            {
+                foreach (ConnectedClient connectedClient in _connectedClients)
+                {
+                    connectedClient.ConnectionHandler.SendJSONString(JSONString);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sends data to a client
+        /// </summary>
+        /// <param name="dataToSend">The data to send to the client</param>
+        /// <param name="client">The client to send the data to</param>
+        public void SendDataToClient(byte[] dataToSend, ConnectedClient client)
+        {
+            if (client != null)
+            {
+                client.ConnectionHandler.SendData(dataToSend);
+            }
+            else
+            {
+                foreach (ConnectedClient connectedClient in _connectedClients)
+                {
+                    connectedClient.ConnectionHandler.SendData(dataToSend);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sends data to a client
+        /// </summary>
+        /// <param name="data">The data to send to the client</param>
+        /// <param name="client">The client to send the data to</param>
+        private void SendDataToClient(CommunicationData data, ConnectedClient client)
+        {
+            if (client != null)
+            {
+                client.ConnectionHandler.SendData(data);
+            }
+            else
+            {
+                foreach (ConnectedClient connectedClient in _connectedClients)
+                {
+                    connectedClient.ConnectionHandler.SendData(data);
                 }
             }
         }
@@ -532,14 +762,14 @@ namespace Communicate.Server
         /// </summary>
         public void UnPublish()
         {
-            _published = false;
+            _listeningState = ServerListeningState.NotListening;
             if (_publishedService != null)
             {
                 _publishedService.Stop();
                 _publishedService = null;
-                if (ServerDidUnPublish != null)
+                if (_serverDidUnPublish != null)
                 {
-                    ServerDidUnPublish(this);
+                    _serverDidUnPublish(this);
                 }
             }
         }
@@ -549,14 +779,14 @@ namespace Communicate.Server
         /// </summary>
         public void StopListening()
         {
-            _listening = false;
+            _listeningState = ServerListeningState.StoppedListening;
             if (_listeningSocket != null)
             {
                 _listeningSocket.Close();
                 _listeningSocket = null;
-                if (ServerDidStopListening != null)
+                if (_serverDidStopListening != null)
                 {
-                    ServerDidStopListening(this);
+                    _serverDidStopListening(this);
                 }
             }
         }
@@ -566,7 +796,7 @@ namespace Communicate.Server
         /// </summary>
         public void Disconnect()
         {
-            ConnectedClients.DisconnectAll();
+            ConnectedClients.DisconnectAllClients();
         }
 
         /// <summary>
@@ -595,7 +825,7 @@ namespace Communicate.Server
         {
             if (disposing)
             {
-                if (_connectedClients != null) { _connectedClients.DisconnectAll(); _connectedClients.Dispose(); _connectedClients = null; }
+                if (_connectedClients != null) { _connectedClients.DisconnectAllClients(); _connectedClients.Dispose(); _connectedClients = null; }
                 if (_listeningSocket != null) { _listeningSocket.Close(); _listeningSocket = null; }
                 if (_publishedService != null) { _publishedService.Dispose(); _publishedService = null; }
             }
@@ -609,7 +839,7 @@ namespace Communicate.Server
         /// <returns>The information about the server in a readable format</returns>
         public override string ToString()
         {
-            return "Server: connected services = " + _connectedClients.ToString() + "; published = " + _published.ToString() + "; " + _serverInfo.ToString() + "; " + _protocolInfo.ToString();
+            return "Server: connected services = " + _connectedClients.ToString() + "; published = " + _publishingState.ToString() + "; listening = " + _listeningState.ToString() + "; " + _serverInfo.ToString() + "; " + _protocolInfo.ToString();
         }
     }
 }

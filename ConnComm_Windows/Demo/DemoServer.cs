@@ -30,7 +30,7 @@ namespace Demo
             recordList.AddTXTRecord("platform", "windows");
             recordList.AddTXTRecord("publish_time", DateTime.Now.ToString());
 
-            ServerInfo serverInfo = new ServerInfo(Environment.MachineName, 12345, recordList);
+            ServerInfo serverInfo = new ServerInfo(Environment.MachineName, 62930, recordList);
             ProtocolInfo protocolInfo = new ProtocolInfo("_ClickBoard", TransportProtocolType.TCP, ProtocolInfo.ProtocolDomainLocal);
 
             server = new Server(serverInfo, protocolInfo);
@@ -120,14 +120,14 @@ namespace Demo
             listBox1.Invoke(new Action(() => listBox1.Items.Add("SERVER: Disconnected")));
         }
 
-        private void HandleServerDidReceiveDataFromClient(Server server, ConnectedClient client, byte[] data, string footerContent, DataType dataType)
+        private void HandleServerDidReceiveDataFromClient(Server server, ConnectedClient client, CommunicationData data)
         {
-            if (dataType == DataType.Image)
+            if (data.GetDataType() == CommunicationDataType.Image)
             {
-                Image image = DataSerializer.ByteArrayToImage(data);
+                Image image = data.ToImage();
                 pictureBox1.Image = (Image)image;
             }
-            else if (dataType == DataType.File)
+            else if (data.GetDataType()  == CommunicationDataType.File)
             {
                 bool useSaveFileDialog = false;
 
@@ -135,6 +135,7 @@ namespace Demo
                 {
                     using (SaveFileDialog saveFileDialog = new SaveFileDialog())
                     {
+                        string footerContent = data.DataHeader.FileName;
                         string fileName = Path.GetFileNameWithoutExtension(footerContent);
                         string extension = Path.GetExtension(footerContent);
                         if (footerContent.Length > 0)
@@ -159,29 +160,29 @@ namespace Demo
                         }
                         if (saveFileDialog.ShowDialog() == DialogResult.OK)
                         {
-                            File.WriteAllBytes(saveFileDialog.FileName, data);
+                            File.WriteAllBytes(saveFileDialog.FileName, data.DataContent.GetBytes());
                         }
                     }
                 }
                 else
                 {
                     string filePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                    filePath = Path.Combine(filePath, footerContent);
-                    File.WriteAllBytes(filePath, data);
+                    filePath = Path.Combine(filePath, data.DataHeader.FileName);
+                    File.WriteAllBytes(filePath, data.DataContent.GetBytes());
                 }
             }
-            else
+            else 
             {
-                string dataInStringForm = Encoding.ASCII.GetString(data, 0, data.Length);
+                string dataInStringForm = Encoding.ASCII.GetString(data.DataContent.GetBytes(), 0, data.DataInfo.ContentLength);
                 server.SendStringToClient("Hi client", Encoding.ASCII, client);
 
                 listBox1.Items.Add("SERVER: received data: " + dataInStringForm);
             }
         }
 
-        private void ServerDidReceiveDataFromClient(Server server, ConnectedClient client, byte[] data, string footerContent, DataType dataType)
+        private void ServerDidReceiveDataFromClient(Server server, ConnectedClient client, CommunicationData data)
         {
-            Invoke(new Action(() => HandleServerDidReceiveDataFromClient(server, client, data, footerContent, dataType)));
+            Invoke(new Action(() => HandleServerDidReceiveDataFromClient(server, client, data)));
         }
 
         private void ServerDidSendDataToClient(Server server, byte[] data, ConnectedClient client)

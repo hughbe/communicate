@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using ZeroconfService;
@@ -10,6 +11,7 @@ using System.Drawing;
 using System.IO;
 using System.Threading;
 using System.Collections.ObjectModel;
+using System.Web.Script.Serialization;
 
 namespace Communicate.Client
 {
@@ -22,15 +24,28 @@ namespace Communicate.Client
     public delegate void ClientDidNotConnect(Client client, Exception exception);
     public delegate void ClientDidConnect(Client client);
     public delegate void ClientDidDisconnect(Client client);
-    public delegate void ClientDidReceiveData(Client client, byte[] data, string footerContent, DataType dataType);
-    public delegate void ClientDidSendData(Client client, byte[] data);
-    public delegate void ClientDidNotSendData(Client client, byte[] data, Exception exception);
+    public delegate void ClientDidReceiveData(Client client, CommunicationData data);
+    public delegate void ClientDidSendData(Client client, CommunicationData data);
+    public delegate void ClientDidNotSendData(Client client, CommunicationData data, Exception exception);
 
     #endregion
-
+    
     public class Client : IDisposable
     {
         #region Private Variables
+
+        private ClientDidStartSearching _clientDidStartSearching;
+        private ClientDidNotSearch _clientDidNotSearch;
+        private ClientDidUpdateServices _clientDidUpdateServices;
+
+        private ClientDidStartConnecting _clientDidStartConnecting;
+        private ClientDidNotConnect _clientDidNotConnect;
+        private ClientDidConnect _clientDidConnect;
+        private ClientDidDisconnect _clientDidDisconnect;
+
+        private ClientDidReceiveData _clientDidReceiveData;
+        private ClientDidSendData _clientDidSendData;
+        private ClientDidNotSendData _clientDidNotSendData;
 
         private ProtocolInfo _protocolInfo;
         private ClientInfo _clientInfo;
@@ -41,15 +56,120 @@ namespace Communicate.Client
         private NetService _connectingService;
 
         private NetService _connectedService;
-        private Socket _connectedSocket;
+        private ConnectionHandler _connectionHandler;
 
-        private bool _searching;
-        private bool _connecting;
-        private bool _connected;
+        private ClientSearchingState _searchingState;
+        private ClientConnectedState _connectedState;
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// The delegate method called when the client starts searching for a server
+        /// </summary>
+        /// <param name="client">The client that started searching</param>
+        public ClientDidStartSearching ClientDidStartSearching
+        {
+            get { return _clientDidStartSearching; }
+            set { _clientDidStartSearching = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the client fails to find for a server
+        /// </summary>
+        /// <param name="client">The client that failed to find a server</param>
+        /// <param name="exception">The reason for the failure to find a server</param>
+        public ClientDidNotSearch ClientDidNotSearch
+        {
+            get { return _clientDidNotSearch; }
+            set { _clientDidNotSearch = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the client finds or loses a list of servers
+        /// </summary>
+        /// <param name="client">The client that found or lost a list of servers</param>
+        public ClientDidUpdateServices ClientDidUpdateServices
+        {
+            get { return _clientDidUpdateServices; }
+            set { _clientDidUpdateServices = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the client starts to connect to a server
+        /// </summary>
+        /// <param name="client">The client that started to connect to a server</param>
+        public ClientDidStartConnecting ClientDidStartConnecting
+        {
+            get { return _clientDidStartConnecting; }
+            set { _clientDidStartConnecting = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the client fails to connect to a server
+        /// </summary>
+        /// <param name="client">The client that failed to connect to a server</param>
+        /// <param name="exception">The reason for the failure to connect to a server</param>
+        public ClientDidNotConnect ClientDidNotConnect
+        {
+            get { return _clientDidNotConnect; }
+            set { _clientDidNotConnect = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the client successfully connects to a server
+        /// </summary>
+        /// <param name="client">The client that connnected to the server</param>
+        public ClientDidConnect ClientDidConnect
+        {
+            get { return _clientDidConnect; }
+            set { _clientDidConnect = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the client disconnects from a server
+        /// </summary>
+        /// <param name="client">The client that disconnnected to the server</param>
+        public ClientDidDisconnect ClientDidDisconnect
+        {
+            get { return _clientDidDisconnect; }
+            set { _clientDidDisconnect = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the client receives data from a device it is connected to
+        /// </summary>
+        /// <param name="client">The client that received the data</param>
+        /// <param name="data">The data received. It can be encoded into a string or image etc.</param>
+        public ClientDidReceiveData ClientDidReceiveData
+        {
+            get { return _clientDidReceiveData; }
+            set { _clientDidReceiveData = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the client sends data to a connected server
+        /// </summary>
+        /// <param name="client">The client that sent the contentData</param>
+        /// <param name="data">The data sent. It can be encoded into a string or image etc.</param>
+        public ClientDidSendData ClientDidSendData
+        {
+            get { return _clientDidSendData; }
+            set { _clientDidSendData = value; }
+        }
+
+        /// <summary>
+        /// The delegate method called when the client fails to send data to a connected server
+        /// </summary>
+        /// <param name="client">The client that failed to send the contentData</param>
+        /// <param name="data">The data that failed to send. It can be encoded into a string or image etc.</param>
+        /// <param name="exception">The reason for the failure to send the data</param>
+        public ClientDidNotSendData ClientDidNotSendData
+        {
+            get { return _clientDidNotSendData; }
+            set { _clientDidNotSendData = value; }
+        }
 
         /// <summary>
         /// The backend information about the client that dictates how the client will search for devices on the network
@@ -84,27 +204,19 @@ namespace Communicate.Client
         }
 
         /// <summary>
-        /// A value indicating whether the client is currently searching for devices on the network
+        /// A value that indicates the searching state of the client
         /// </summary>
-        public bool Searching
+        public ClientSearchingState SearchingState
         {
-            get { return _searching; }
+            get { return _searchingState; }
         }
 
         /// <summary>
-        /// A value indicating whether the client is currently in the process of connecting to a device on the network
+        /// A value that indicates the connected state of the client
         /// </summary>
-        public bool Connecting
+        public ClientConnectedState ConnectedState
         {
-            get { return _connecting; }
-        }
-
-        /// <summary>
-        /// A value indicating whether the client is currently connected to a device on the network
-        /// </summary>
-        public bool Connected
-        {
-            get { return _connected; }
+            get { return _connectedState; }
         }
 
         /// <summary>
@@ -124,83 +236,12 @@ namespace Communicate.Client
         }
 
         /// <summary>
-        /// The socket the client is current connected to. This may be null
+        /// The connection handler for the client
         /// </summary>
-        public Socket ConnectedSocket
+        internal ConnectionHandler ConnectionHandler
         {
-            get { return _connectedSocket; }
+            get { return _connectionHandler; }
         }
-
-        #endregion
-
-        #region Delegates
-
-        /// <summary>
-        /// The delegate method called when the client starts searching for a server
-        /// </summary>
-        /// <param name="client">The client that started searching</param>
-        public ClientDidStartSearching ClientDidStartSearching;
-
-        /// <summary>
-        /// The delegate method called when the client fails to find for a server
-        /// </summary>
-        /// <param name="client">The client that failed to find a server</param>
-        /// <param name="exception">The reason for the failure to find a server</param>
-        public ClientDidNotSearch ClientDidNotSearch;
-
-        /// <summary>
-        /// The delegate method called when the client finds or loses a list of servers
-        /// </summary>
-        /// <param name="client">The client that found or lost a list of servers</param>
-        public ClientDidUpdateServices ClientDidUpdateServices;
-
-        /// <summary>
-        /// The delegate method called when the client starts to connect to a server
-        /// </summary>
-        /// <param name="client">The client that started to connect to a server</param>
-        public ClientDidStartConnecting ClientDidStartConnecting;
-
-        /// <summary>
-        /// The delegate method called when the client fails to connect to a server
-        /// </summary>
-        /// <param name="client">The client that failed to connect to a server</param>
-        /// <param name="exception">The reason for the failure to connect to a server</param>
-        public ClientDidNotConnect ClientDidNotConnect;
-
-        /// <summary>
-        /// The delegate method called when the client successfully connects to a server
-        /// </summary>
-        /// <param name="client">The client that connnected to the server</param>
-        public ClientDidConnect ClientDidConnect;
-
-        /// <summary>
-        /// The delegate method called when the client disconnects from a server
-        /// </summary>
-        /// <param name="client">The client that disconnnected to the server</param>
-        public ClientDidDisconnect ClientDidDisconnect;
-
-        /// <summary>
-        /// The delegate method called when the client receives contentData from a device it is connected to
-        /// </summary>
-        /// <param name="client">The client that received the contentData</param>
-        /// <param name="contentData">The byte array of the contentData received. It can be encoded into a string or image etc.</param>
-        /// <param name="numberOfBytesTransferred">The number of bytes transferred from server to client</param>
-        public ClientDidReceiveData ClientDidReceiveData;
-
-        /// <summary>
-        /// The delegate method called when the client sends contentData to a connected server
-        /// </summary>
-        /// <param name="client">The client that sent the contentData</param>
-        /// <param name="contentData">The byte array of the contentData sent. It can be encoded into a string or image etc.</param>
-        public ClientDidSendData ClientDidSendData;
-
-        /// <summary>
-        /// The delegate method called when the client fails to send contentData to a connected server
-        /// </summary>
-        /// <param name="client">The client that failed to send the contentData</param>
-        /// <param name="contentData">The byte array of the contentData that failed to be sent. It can be encoded into a string or image etc.</param>
-        /// <param name="exception">The reason for the failure to send the contentData</param>
-        public ClientDidNotSendData ClientDidNotSendData;
 
         #endregion
 
@@ -215,6 +256,23 @@ namespace Communicate.Client
         {
             _protocolInfo = protocolInfo;
             _clientInfo = clientInfo;
+            _searchingState = ClientSearchingState.NotSearching;
+            _connectedState = ClientConnectedState.NotConnected;
+
+            _connectionHandler = new ConnectionHandler(_clientInfo);
+            _connectionHandler.ConnectionHandlerDidConnect = ConnectionHandlerDidConnect;
+            _connectionHandler.ConnectionHandlerDidDisconnect = ConnectionHandlerDidDisconnect;
+            _connectionHandler.ConnectionHandlerDidReceiveData = ConnectionHandlerDidReceiveData;
+            _connectionHandler.ConnectionHandlerDidSendData = ConnectionHandlerDidSendData;
+            _connectionHandler.ConnectionHandlerDidNotSendData = ConnectionHandlerDidNotSendData;
+        }
+
+        /// <summary>
+        /// Use of the empty constructor is prevented
+        /// </summary>
+        private Client()
+        {
+
         }
 
         /// <summary>
@@ -223,21 +281,21 @@ namespace Communicate.Client
         public void Search()
         {
             StopSearching();
-            _searching = true;
+            _searchingState = ClientSearchingState.Searching;
             _services = new Collection<NetService>();
             try
             {
                 _browser = new NetServiceBrowser();
                 _browser.DidFindService += DidFindService;
                 _browser.DidRemoveService += DidRemoveService;
-                _browser.SearchForService(_protocolInfo.SerializeType(), _protocolInfo.Domain);
+                _browser.SearchForService(_protocolInfo.SerializeType(false), _protocolInfo.Domain);
             }
             catch (Exception exception)
             {
-                _searching = false;
-                if (ClientDidNotSearch != null)
+                _searchingState = ClientSearchingState.ErrorSearching;
+                if (_clientDidNotSearch != null)
                 {
-                    ClientDidNotSearch(this, exception);
+                    _clientDidNotSearch(this, exception);
                 }
             }
         }
@@ -264,9 +322,9 @@ namespace Communicate.Client
             }
             if (!moreComing)
             {
-                if (ClientDidUpdateServices != null)
+                if (_clientDidUpdateServices != null)
                 {
-                    ClientDidUpdateServices(this);
+                    _clientDidUpdateServices(this);
                 }
             }
         }
@@ -282,9 +340,9 @@ namespace Communicate.Client
             _services.Remove(service);
             if (!moreComing)
             {
-                if (ClientDidUpdateServices != null)
+                if (_clientDidUpdateServices != null)
                 {
-                    ClientDidUpdateServices(this);
+                    _clientDidUpdateServices(this);
                 }
             }
         }
@@ -299,15 +357,15 @@ namespace Communicate.Client
         /// <param name="service">The computer, represented by a NetService object, to connect to</param>
         public void ConnectToService(NetService service)
         {
-            if(_connecting || service == null) 
+            if(_connectedState == ClientConnectedState.Connecting || service == null) 
             {
                 return;
             }
-            _connecting = true;
+            _connectedState = ClientConnectedState.Connecting;
             _connectingService = service;
-            if (ClientDidStartConnecting != null)
+            if (_clientDidStartConnecting != null)
             {
-                ClientDidStartConnecting(this);
+                _clientDidStartConnecting(this);
             }
             try
             {
@@ -317,10 +375,10 @@ namespace Communicate.Client
             }
             catch (Exception exception)
             {
-                StopConnecting();
-                if (ClientDidNotConnect != null)
+                _connectedState = ClientConnectedState.ErrorConnecting;
+                if (_clientDidNotConnect != null)
                 {
-                    ClientDidNotConnect(this, exception);
+                    _clientDidNotConnect(this, exception);
                 }
             }
         }
@@ -331,46 +389,46 @@ namespace Communicate.Client
         /// <param name="service">The service that the client connected to</param>
         private void DidResolveService(NetService service)
         {
+            if (_connectedState == ClientConnectedState.Connected)
+            {
+                return;
+            }
             try
             {
-                Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                
-                    socket.Connect(service.HostName, _clientInfo.Port);
-                    _connecting = false;
+                TcpClient client = _connectionHandler.TCPClient;
+                if (service.Addresses.Count > 0)
+                {
+                    IPEndPoint endPoint = (IPEndPoint)service.Addresses[0];
+                    client.Connect(endPoint);
+                }
+                else
+                {
+                    client.Connect(service.HostName, service.Port);
+                }
+                EndConnecting();
+
+                if (client.Connected && _connectedState != ClientConnectedState.Connected)
+                {
+                    _connectedService = service;
+                    _connectionHandler.ConnectToSocket(client.Client);
+                }
+                else if (!client.Connected)
+                {
                     EndConnecting();
-                    if (socket.Connected && !_connected)
+                    _connectedState = ClientConnectedState.ErrorConnecting;
+                    if (_clientDidNotConnect != null)
                     {
-                        _connected = true;
-                        _connectedService = service;
-                        _connectedSocket = socket;
-
-                        Thread backgroundThread = new Thread(new ThreadStart(Receive));
-                        backgroundThread.IsBackground = true;
-                        backgroundThread.Start();
-
-                        if (ClientDidConnect != null)
-                        {
-                            ClientDidConnect(this);
-                        }
-
+                        _clientDidNotConnect(this, new Exception("Error opening socket"));
                     }
-                    else if (!socket.Connected)
-                    {
-                        EndConnecting();
-                        Disconnect();
-                        if (ClientDidNotConnect != null)
-                        {
-                            ClientDidNotConnect(this, new Exception("Error opening socket"));
-                        }
-                    }
+                }
             }
             catch (Exception exception)
             {
                 EndConnecting();
                 Disconnect();
-                if (ClientDidNotConnect != null)
+                if (_clientDidNotConnect != null)
                 {
-                    ClientDidNotConnect(this, exception);
+                    _clientDidNotConnect(this, exception);
                 }
             }
         }
@@ -382,83 +440,82 @@ namespace Communicate.Client
         /// <param name="exception">The reason why the client failed to connect</param>
         private void DidNotResolveService(NetService service, DNSServiceException exception)
         {
-            StopConnecting();
-            if (ClientDidNotConnect != null)
+            _connectedState = ClientConnectedState.ErrorConnecting;
+            if (_clientDidNotConnect != null)
             {
-                ClientDidNotConnect(this, exception);
+                _clientDidNotConnect(this, exception);
+            }
+        }
+        /// <summary>
+        /// The delegate method called when the connection handler connects
+        /// </summary>
+        /// <param name="connectionHandler">The connection handler that connected</param>
+        private void ConnectionHandlerDidConnect(ConnectionHandler connectionHandler)
+        {
+            _connectedState = ClientConnectedState.Connected;
+            if (_clientDidConnect != null)
+            {
+                _clientDidConnect(this);
+            }
+        }
+
+        /// <summary>
+        /// The delegate method called when the connection handler disconnects
+        /// </summary>
+        /// <param name="connectionHandler">The connection handler that disconnected</param>
+        private void ConnectionHandlerDidDisconnect(ConnectionHandler connectionHandler)
+        {
+            _connectedState = ClientConnectedState.Disconnected;
+            if (_clientDidDisconnect != null)
+            {
+                _clientDidDisconnect(this);
+            }
+        }
+
+        /// <summary>
+        /// The delegate method called when the connection handler receives data
+        /// </summary>
+        /// <param name="connectionHandler">The connection handler that received the data</param>
+        /// <param name="data">The data received</param>
+        private void ConnectionHandlerDidReceiveData(ConnectionHandler connectionHandler, CommunicationData data)
+        {
+            if (_clientDidReceiveData != null)
+            {
+                _clientDidReceiveData(this, data);
+            }
+        }
+
+        /// <summary>
+        /// The delegate method called when the connection handler sends data successfully
+        /// </summary>
+        /// <param name="connectionHandler">The connection handler that sent the data</param>
+        /// <param name="data">The data sent</param>
+        private void ConnectionHandlerDidSendData(ConnectionHandler connectionHandler, CommunicationData data)
+        {
+            if (_clientDidSendData != null)
+            {
+                _clientDidSendData(this, data);
+            }
+        }
+
+        /// <summary>
+        /// The delegate method called when the connection handler fails to send data successfully
+        /// </summary>
+        /// <param name="connectionHandler">The connection handler that failed to send the data</param>
+        /// <param name="data">The data failed to send</param>
+        /// <param name="reason">The reason why the data failed to send</param>
+        private void ConnectionHandlerDidNotSendData(ConnectionHandler connectionHandler, CommunicationData data, Exception reason)
+        {
+            if (_clientDidNotSendData != null)
+            {
+                _clientDidNotSendData(this, data, reason);
             }
         }
 
         #endregion
 
         #region Sending and Receiving
-
-        /// <summary>
-        /// The synchronous method for receiving contentData
-        /// </summary>
-        private void Receive()
-        {
-            try
-            {
-                while (true)
-                {
-
-                    byte[] headerData = new byte[10];
-                    int headerBytesRead = 0;
-                    while (headerBytesRead < headerData.Length)
-                    {
-                        int read = _connectedSocket.Receive(headerData, headerBytesRead, headerData.Length - headerBytesRead, SocketFlags.None);
-                        if (read != 0)
-                        {
-                            headerBytesRead += read;
-                        }
-                    }
-
-                    byte[] typeBuffer = new byte[2] { headerData[0], headerData[1] };
-                    DataType receivingDataType = DataSerializer.DataTypeFromByteArray(typeBuffer);
-
-                    int contentLength = BitConverter.ToInt32(headerData, 2);
-                    int footerLength = BitConverter.ToInt32(headerData, 6);
-
-                    byte[] contentData = new byte[contentLength];
-                    int contentBytesRead = 0;
-                    while (contentBytesRead < contentData.Length)
-                    {
-                        int read = _connectedSocket.Receive(contentData, contentBytesRead, contentData.Length - contentBytesRead, SocketFlags.None);
-                        if (read != 0)
-                        {
-                            contentBytesRead += read;
-                        }
-                    }
-
-                    byte[] footerData = new byte[footerLength];
-                    int footerBytesRead = 0;
-                    while (footerBytesRead < footerData.Length)
-                    {
-                        int read = _connectedSocket.Receive(footerData, footerBytesRead, footerData.Length - footerBytesRead, SocketFlags.None);
-                        if (read != 0)
-                        {
-                            footerBytesRead += read;
-                        }
-                    }
-                    string footerContent = "";
-                    if (footerData.Length > 0)
-                    {
-                        footerContent = DataSerializer.ByteArrayToString(footerData);
-                    }
-
-                    if (ClientDidReceiveData != null)
-                    {
-                        ClientDidReceiveData(this, contentData, footerContent, receivingDataType);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-        }
-
+        
         /// <summary>
         /// Sends a string to the server
         /// </summary>
@@ -475,7 +532,16 @@ namespace Communicate.Client
         /// <param name="encoding">The encoding of the string to send to the server</param>
         public void SendString(string stringToSend, Encoding encoding)
         {
-            SendData(DataSerializer.StringToByteArray(stringToSend, encoding));
+            _connectionHandler.SendString(stringToSend, encoding);
+        }
+
+        /// <summary>
+        /// Sends an untitled image to the server
+        /// </summary>
+        /// <param name="image">The image to send to the server</param>
+        public void SendImage(Image image)
+        {
+            SendImage(image, "Untitled");
         }
 
         /// <summary>
@@ -485,7 +551,7 @@ namespace Communicate.Client
         /// <param name="name">The name of the image to send</param>
         public void SendImage(Image image, string name)
         {
-            SendData(DataSerializer.ImageToByteArray(image, name));
+            _connectionHandler.SendImage(image, name);
         }
 
         /// <summary>
@@ -494,60 +560,70 @@ namespace Communicate.Client
         /// <param name="filePath">The path of the file to send to the server</param>
         public void SendFile(string filePath)
         {
+            SendFile(filePath, Path.GetFileName(filePath));
+        }
+        
+        /// <summary>
+        /// Sends a file to the server
+        /// </summary>
+        /// <param name="filePath">The path of the file to send to the server</param>
+        /// <param name="name">The name of the file to send to the server</param>
+        public void SendFile(string filePath, string name)
+        {
             byte[] bytes = File.ReadAllBytes(filePath);
             if (DataDetector.IsValidImage(bytes))
             {
-                SendImage(Image.FromFile(filePath), Path.GetFileName(filePath));
+                _connectionHandler.SendImage(Image.FromFile(filePath), name);
             }
             else
             {
-                SendData(DataSerializer.FileToByteArray(filePath));
+                _connectionHandler.SendFile(filePath, name);
             }
         }
 
         /// <summary>
-        /// Sends contentData to the server
+        /// Sends a dictionary encoded in JSON to the server
         /// </summary>
-        /// <param name="dataList">The contentData to send to the server</param>
-        public void SendData(Collection<byte[]> dataList)
+        /// <param name="dictionary">The dictionary to send</param>
+        public void SendDictionary(Dictionary<object, object> dictionary) 
         {
-            if (dataList == null || dataList.Count < 3)
-            {
-                return;
-            }
-            byte[] header = dataList[0];
-            byte[] bytes = dataList[1];
-            byte[] footer = dataList[2];
-
-            if (_connected && _connectedSocket != null)
-            {
-                try
-                {
-                    _connectedSocket.Send(header);
-                    _connectedSocket.Send(bytes);
-                    _connectedSocket.Send(footer);
-                    if (ClientDidSendData != null)
-                    {
-                        ClientDidSendData(this, bytes);
-                    }
-                }
-                catch (Exception exception)
-                {
-                    if (ClientDidNotSendData != null)
-                    {
-                        ClientDidNotSendData(this, bytes, exception);
-                    }
-                }
-            }
+            _connectionHandler.SendDictionary(dictionary);
         }
 
         /// <summary>
-        /// Sends contentData to the server
+        /// Sends an array encoded in JSON to the server
         /// </summary>
-        /// <param name="dataToSend">The contentData to send to the server</param>
+        /// <param name="array">The array to send</param>
+        public void SendArray(List<object> array)
+        {
+            _connectionHandler.SendArray(array);
+        }
+
+        /// <summary>
+        /// Sends a JSON string to the server
+        /// </summary>
+        /// <param name="JSONString">The JSON string to send</param>
+        public void SendJSONString(string JSONString) 
+        {
+            _connectionHandler.SendJSONString(JSONString);
+        }
+        
+        /// <summary>
+        /// Sends data to the server
+        /// </summary>
+        /// <param name="dataToSend">The data to send to the server</param>
         public void SendData(byte[] dataToSend)
         {
-            SendData(DataSerializer.DataToByteArray(dataToSend));
+            _connectionHandler.SendData(dataToSend);
+        }
+
+        /// <summary>
+        /// Sends data to the server
+        /// </summary>
+        /// <param name="data">The communication data to send to the server</param>
+        public void SendData(CommunicationData data)
+        {
+            _connectionHandler.SendData(data);
         }
 
         #endregion
@@ -559,28 +635,12 @@ namespace Communicate.Client
         /// </summary>
         public void StopSearching()
         {
-            _searching = false;
+            _searchingState = ClientSearchingState.StoppedSearching;
             if (_browser != null)
             {
                 _browser.Stop();
                 _browser.Dispose();
                 _browser = null;
-            }
-        }
-        
-        /// <summary>
-        /// Stops the client from connecting to a device on the network
-        /// </summary>
-        public void StopConnecting()
-        {
-            _connecting = false;
-            if (_connectingService != null)
-            {
-                EndConnecting();
-                if (ClientDidNotConnect != null)
-                {
-                    ClientDidNotConnect(this, new Exception("User ended the connecting process"));
-                }
             }
         }
 
@@ -600,23 +660,12 @@ namespace Communicate.Client
         /// </summary>
         public void Disconnect()
         {
-            _connected = false;
-            if (_connectedService != null)
+            _connectedState = ClientConnectedState.Disconnected;
+            EndConnecting();
+            if (_connectionHandler != null)
             {
-                _connectedService.Stop();
-                _connectedService.Dispose();
-                _connectedService = null;
-            }
-
-            if (_connectedSocket != null)
-            {
-                _connectedSocket.Close();
-                _connectedService = null;
-                _connectedSocket = null;
-                if (ClientDidDisconnect != null)
-                {
-                    ClientDidDisconnect(this);
-                }
+                _connectionHandler.Disconnect();
+                _connectionHandler = null;
             }
         }
 
@@ -626,7 +675,6 @@ namespace Communicate.Client
         public void Stop()
         {
             StopSearching();
-            StopConnecting();
             Disconnect();
         }
         /// <summary>
@@ -648,7 +696,7 @@ namespace Communicate.Client
                 if (_browser != null) { _browser.Stop(); _browser.Dispose(); _browser = null; }
                 if (_connectingService != null) { _connectingService.Stop(); _connectingService.Dispose(); _connectingService = null; }
                 if (_connectedService != null) { _connectedService.Stop(); _connectedService.Dispose(); _connectedService = null; }
-                if (_connectedSocket != null) { _connectedSocket.Close(); _connectedSocket = null; }
+                if (_connectionHandler != null) { _connectionHandler.Disconnect(); _connectionHandler = null; }
             }
         }
 

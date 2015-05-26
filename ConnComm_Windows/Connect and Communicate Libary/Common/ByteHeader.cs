@@ -15,7 +15,7 @@ namespace Communicate.Common
         private Int32 _byte1;
         private Int32 _byte2;
 
-        private DataType _dataType;
+        private CommunicationDataType _dataType;
 
         #endregion
 
@@ -40,7 +40,7 @@ namespace Communicate.Common
         /// <summary>
         /// The type of contentData this header encodes for
         /// </summary>
-        public DataType DataType
+        public CommunicationDataType DataType
         {
             get { return _dataType; }
         }
@@ -53,7 +53,7 @@ namespace Communicate.Common
         /// <param name="byte1">The first byte value</param>
         /// <param name="byte2">The second byte value</param>
         /// <param name="dataType">The type of contentData this header encodes for</param>
-        public ByteHeader(Int32 byte1, Int32 byte2, DataType dataType)
+        public ByteHeader(Int32 byte1, Int32 byte2, CommunicationDataType dataType)
         {
             _byte1 = byte1;
             _byte2 = byte2;
@@ -74,7 +74,7 @@ namespace Communicate.Common
         /// <returns>The byte header for the string contentData type</returns>
         public static ByteHeader StringByteHeader
         {
-            get { return new ByteHeader(0x01, 0x01, DataType.String); }
+            get { return new ByteHeader(0x01, 0x01, CommunicationDataType.String); }
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Communicate.Common
         /// <returns>The byte header for the image contentData type</returns>
         public static ByteHeader ImageByteHeader
         {
-            get { return new ByteHeader(0x02, 0x02, DataType.Image); }
+            get { return new ByteHeader(0x02, 0x02, CommunicationDataType.Image); }
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Communicate.Common
         /// <returns>The byte header for the file contentData type</returns>
         public static ByteHeader FileByteHeader
         {
-            get { return new ByteHeader(0x03, 0x03, DataType.File); }
+            get { return new ByteHeader(0x03, 0x03, CommunicationDataType.File); }
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace Communicate.Common
         /// <returns>The byte header for the JSON contentData type</returns>
         public static ByteHeader JSONByteHeader
         {
-            get { return new ByteHeader(0x04, 0x04, DataType.JSON); }
+            get { return new ByteHeader(0x04, 0x04, CommunicationDataType.JSON); }
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace Communicate.Common
         /// <returns>The byte header for the other contentData type</returns>
         public static ByteHeader OtherByteHeader
         {
-            get { return new ByteHeader(0x09, 0x09, DataType.Other); }
+            get { return new ByteHeader(0x09, 0x09, CommunicationDataType.Other); }
         }
 
         /// <summary>

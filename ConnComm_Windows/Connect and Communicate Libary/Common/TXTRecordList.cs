@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using ZeroconfService;
 
 namespace Communicate.Common
 {
@@ -11,14 +12,14 @@ namespace Communicate.Common
         /// <summary>
         /// The inner storage mechanism of TXTRecords
         /// </summary>
-        private Hashtable innerHashtable;
+        private Hashtable innerList;
 
         /// <summary>
         /// The default constructor for the TXTRecordList object
         /// </summary>
         public TXTRecordList()
         {
-            innerHashtable = new Hashtable();
+            innerList = new Hashtable();
         }
 
         /// <summary>
@@ -29,11 +30,10 @@ namespace Communicate.Common
         {
             if (record != null)
             {
-                innerHashtable.Add(record.Key, record.Value);
+                innerList.Add(record.Key, record.Value);
             }
         }
 
-        
         /// <summary>
         /// Adds a TXTRecord in the form of a key and value pair to the list of TXTRecords
         ///</summary>
@@ -48,9 +48,9 @@ namespace Communicate.Common
         /// <summary>
         /// The method that returns a serialized version of a list of TXTRecords for use when publishing the server on the network
         /// </summary>
-        /// <returns></returns>
-        public Hashtable Serialize() {
-            return innerHashtable;
+        /// <returns>The serialized version of the list of TXTRecords</returns>
+        public byte[] Serialize() {
+            return NetService.DataFromTXTRecordDictionary(innerList);
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Communicate.Common
         /// </summary>
         /// <returns>The information about the TXTRecords in a readable format</returns>
         public override string ToString() {
-            return innerHashtable.ToString();
+            return innerList.ToString();
         }
     }
 }

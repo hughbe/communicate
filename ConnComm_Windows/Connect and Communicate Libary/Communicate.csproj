@@ -44,6 +44,8 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
@@ -53,9 +55,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\Client.cs" />
+    <Compile Include="Client\ClientConnectedState.cs" />
     <Compile Include="Client\ClientInfo.cs" />
+    <Compile Include="Client\ClientSearchingState.cs" />
     <Compile Include="Common\ByteHeader.cs" />
+    <Compile Include="Common\ConnectionHandler.cs" />
+    <Compile Include="Common\DataContent.cs" />
+    <Compile Include="Common\DataFooter.cs" />
+    <Compile Include="Common\DataHeader.cs" />
+    <Compile Include="Common\DataHeaderFooter.cs" />
     <Compile Include="Common\ClientState.cs" />
+    <Compile Include="Common\DataInfo.cs" />
     <Compile Include="Server\ConnectedClient.cs" />
     <Compile Include="Server\ConnectedClients.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -68,12 +78,17 @@
     <Compile Include="Common\TransportProtocolType.cs" />
     <Compile Include="Common\TXTRecord.cs" />
     <Compile Include="Common\TXTRecordList.cs" />
+    <Compile Include="Server\ServerListeningState.cs" />
+    <Compile Include="Server\ServerPublishingState.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Connect and Communicate Strong Name Key.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common\CommunicationData.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

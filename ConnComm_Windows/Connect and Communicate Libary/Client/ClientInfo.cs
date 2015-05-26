@@ -20,7 +20,7 @@ namespace Communicate.Client
         }
 
         #endregion
-
+            
         /// <summary>
         /// The default constructor for the ClientInfo object
         /// </summary>

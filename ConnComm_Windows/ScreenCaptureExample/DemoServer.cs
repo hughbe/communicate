@@ -34,11 +34,11 @@ namespace ScreenCaptureExample
             server.PublishAndListen();
         }
 
-        private void ServerDidReceiveDataFromClient(Server server, ConnectedClient client, byte[] data, int numberOfBytesTransferred, DataType dataType)
+        private void ServerDidReceiveDataFromClient(Server server, ConnectedClient client, CommunicationData data)
         {
-            if (dataType == DataType.Image)
+            if (data.GetDataType() == CommunicationDataType.Image)
             {
-                Image image = DataSerializer.ByteArrayToImage(data);
+                Image image = data.ToImage();
                 pictureBox1.Image = image;
             }
         }
