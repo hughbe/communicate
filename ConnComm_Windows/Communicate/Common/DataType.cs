@@ -14,7 +14,8 @@ namespace Communicate.Common
         JSON,
         File,
         Image,
-        Other
+        Other,
+        Termination
     }
 
     /// <summary>

@@ -23,7 +23,7 @@ namespace Communicate.Common
         /// </summary>
         private static List<ByteHeader> byteHeaders = new List<ByteHeader>
         {
-            ByteHeader.StringByteHeader, ByteHeader.ImageByteHeader, ByteHeader.FileByteHeader, ByteHeader.JSONByteHeader, ByteHeader.OtherByteHeader
+            ByteHeader.StringByteHeader, ByteHeader.ImageByteHeader, ByteHeader.FileByteHeader, ByteHeader.JSONByteHeader, ByteHeader.OtherByteHeader, ByteHeader.TerminationByteHeader
         };
 
         #endregion
@@ -165,6 +165,10 @@ namespace Communicate.Common
             else if (dataType == CommunicationDataType.JSON)
             {
                 byteHeader = ByteHeader.JSONByteHeader;
+            }
+            else if(dataType == CommunicationDataType.Termination)
+            {
+                byteHeader = ByteHeader.TerminationByteHeader;
             }
 
             return byteHeader.ToArray();

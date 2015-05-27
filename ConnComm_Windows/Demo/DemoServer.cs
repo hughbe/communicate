@@ -11,7 +11,7 @@ using Communicate;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using Communicate.Common;
-using Communicate.Server;
+using Communicate.Connecting;
 
 namespace Demo
 {
@@ -22,34 +22,35 @@ namespace Demo
             InitializeComponent();
         }
 
-        private Server server;
+        private Communicator server;
 
         private void Form1_Load(object sender, EventArgs e)
         {
             TXTRecordList recordList = new TXTRecordList();
             recordList.AddTXTRecord("platform", "windows");
             recordList.AddTXTRecord("publish_time", DateTime.Now.ToString());
+            
+            ProtocolInfo protocolInfo = new ProtocolInfo("_Test", TransportProtocolType.TCP, ProtocolInfo.ProtocolDomainLocal);
+            CommunicatorInfo communicatorInfo = new CommunicatorInfo(Environment.MachineName, 62930, recordList);
 
-            ServerInfo serverInfo = new ServerInfo(Environment.MachineName, 62930, recordList);
-            ProtocolInfo protocolInfo = new ProtocolInfo("_ClickBoard", TransportProtocolType.TCP, ProtocolInfo.ProtocolDomainLocal);
+            server = new Communicator(protocolInfo, communicatorInfo);
 
-            server = new Server(serverInfo, protocolInfo);
+            server.DidPublish += ServerDidPublish;
+            server.DidNotPublish += ServerDidNotPublish;
+            server.DidUnpublish += ServerDidUnPublish;
 
-            server.ServerDidPublish += ServerDidPublish;
-            server.ServerDidNotPublish += ServerDidNotPublish;
-            server.ServerDidUnPublish += ServerDidUnPublish;
+            server.DidStartListening += ServerDidStartListening;
+            server.DidNotStartListening += ServerDidNotStartListening;
+            server.DidStopListening += ServerDidStopListening;
 
-            server.ServerDidStartListening += ServerDidStartListening;
-            server.ServerDidNotStartListening += ServerDidNotStartListening;
-            server.ServerDidStopListening += ServerDidStopListening;
+            server.DidStartConnecting += ServerDidStartConnecting;
+            server.DidConnect += ServerDidConnect;
+            server.DidNotConnect += ServerDidNotConnect;
+            server.DidDisconnect += ServerDidDisconnect;
 
-            server.ServerDidStartConnectingToClient += ServerDidStartConnectingToClient;
-            server.ServerDidConnectToClient += ServerDidConnectToClient;
-
-            server.ServerDidNotConnectToClient += ServerDidNotConnectToClient;
-            server.ServerDidDisconnectFromClient += ServerDidDisconnectFromClient;
-
-            server.ServerDidReceiveDataFromClient += ServerDidReceiveDataFromClient;
+            server.DidReceiveData += ServerDidReceiveData;
+            server.DidSendData += ServerDidSendData;
+            server.DidNotSendData += ServerDidNotSendData;
 
             server.Publish();
             server.StartListening();
@@ -60,67 +61,67 @@ namespace Demo
             server.Stop();
         }
 
-        private void ServerDidPublish(Server server)
+        private void ServerDidPublish(Communicator communicator)
         {
             //Console.WriteLine("SERVER: Published");
             listBox1.Invoke(new Action(() => listBox1.Items.Add("SERVER: Published")));
         }
 
-        private void ServerDidNotPublish(Server server, Exception exception)
+        private void ServerDidNotPublish(Communicator communicator, Exception exception)
         {
             //Console.WriteLine("SERVER: Did not publish. Reason: " + exception.ToString());
             listBox1.Invoke(new Action(() => listBox1.Items.Add("SERVER: Did not publish. Reason: " + exception.ToString())));
         }
 
-        private void ServerDidUnPublish(Server server)
+        private void ServerDidUnPublish(Communicator communicator)
         {
             //Console.WriteLine("SERVER: Unpublished");
             listBox1.Invoke(new Action(() => listBox1.Items.Add("SERVER: Unpublished")));
         }
 
-        private void ServerDidStartListening(Server server)
+        private void ServerDidStartListening(Communicator communicator)
         {
             //Console.WriteLine("SERVER: Started listening");
             listBox1.Invoke(new Action(() => listBox1.Items.Add("SERVER: Started listening")));
         }
 
-        private void ServerDidNotStartListening(Server server, Exception exception)
+        private void ServerDidNotStartListening(Communicator communicator, Exception exception)
         {
             //Console.WriteLine("SERVER: Did not start listening. Reason: " + exception.ToString());
             listBox1.Invoke(new Action(() => listBox1.Items.Add("SERVER: Did not start listening. Reason: " + exception.ToString())));
         }
 
-        private void ServerDidStopListening(Server server)
+        private void ServerDidStopListening(Communicator communicator)
         {
             //Console.WriteLine("SERVER: Stopped listening");
             listBox1.Invoke(new Action(() => listBox1.Items.Add("SERVER: Stopped listening")));
         }
 
-        private void ServerDidStartConnectingToClient(Server server, ConnectedClient client)
+        private void ServerDidStartConnecting(Communicator communicator, Connection connection)
         {
             //Console.WriteLine("SERVER: Connecting to client");
             listBox1.Invoke(new Action(() => listBox1.Items.Add("SERVER: Connecting to client")));
         }
 
-        private void ServerDidConnectToClient(Server server, ConnectedClient client)
+        private void ServerDidConnect(Communicator communicator, Connection connection)
         {
             //Console.WriteLine("SERVER: Connected to client");
             listBox1.Invoke(new Action(() => listBox1.Items.Add("SERVER: Connected to client")));
         }
 
-        private void ServerDidNotConnectToClient(Server server, ConnectedClient client, Exception exception)
+        private void ServerDidNotConnect(Communicator communicator, Connection connection, Exception exception)
         {
             //Console.WriteLine("SERVER: Did not connect to client. Reason: " + exception.ToString());
             listBox1.Invoke(new Action(() => listBox1.Items.Add("SERVER: Did not connect to client. Reason: " + exception.ToString())));
         }
 
-        private void ServerDidDisconnectFromClient(Server server, ConnectedClient client)
+        private void ServerDidDisconnect(Communicator communicator, Connection connection)
         {
             //Console.WriteLine("SERVER: Disconnected");
             listBox1.Invoke(new Action(() => listBox1.Items.Add("SERVER: Disconnected")));
         }
 
-        private void HandleServerDidReceiveDataFromClient(Server server, ConnectedClient client, CommunicationData data)
+        private void HandleServerDidReceiveDataFromClient(Communicator communicator, Connection connection, CommunicationData data)
         {
             if (data.GetDataType() == CommunicationDataType.Image)
             {
@@ -174,24 +175,24 @@ namespace Demo
             else 
             {
                 string dataInStringForm = Encoding.ASCII.GetString(data.DataContent.GetBytes(), 0, data.DataInfo.ContentLength);
-                server.SendStringToClient("Hi client", Encoding.ASCII, client);
+                //server.SendString("Hi client", Encoding.ASCII, connection);
 
                 listBox1.Items.Add("SERVER: received data: " + dataInStringForm);
             }
         }
 
-        private void ServerDidReceiveDataFromClient(Server server, ConnectedClient client, CommunicationData data)
+        private void ServerDidReceiveData(Communicator communicator, Connection connection, CommunicationData data)
         {
-            Invoke(new Action(() => HandleServerDidReceiveDataFromClient(server, client, data)));
+            Invoke(new Action(() => HandleServerDidReceiveDataFromClient(server, connection, data)));
         }
 
-        private void ServerDidSendDataToClient(Server server, byte[] data, ConnectedClient client)
+        private void ServerDidSendData(Communicator communicator, Connection connection, CommunicationData data)
         {
             //Console.WriteLine("SERVER: Sent data to the client");
             listBox1.Invoke(new Action(() => listBox1.Items.Add("SERVER: Sent data to the client")));
         }
 
-        private void ServerDidNotSendDataToClient(Server server, byte[] data, Exception exception, ConnectedClient client)
+        private void ServerDidNotSendData(Communicator communicator, Connection connection, CommunicationData data, Exception exception)
         {
             //Console.WriteLine("SERVER: Did not send data to the client. Reason: " + exception.ToString());
             listBox1.Invoke(new Action(() => listBox1.Items.Add("SERVER: Did not send data to the client. Reason: " + exception.ToString())));
@@ -212,7 +213,7 @@ namespace Demo
 
         public void SendTextBoxTextToAllClients()
         {
-            server.SendStringToAllClients(textBox1.Text);
+            server.ConnectionManager.SendString(textBox1.Text);
             textBox1.Text = "";
         }
     }

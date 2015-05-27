@@ -85,6 +85,18 @@ namespace Communicate.Common
         }
 
         /// <summary>
+        /// The data sent when a connection is terminated
+        /// </summary>
+        public static CommunicationData TerminationCommunicationData
+        {
+            get 
+            {
+                DataInfo dataInfo = new DataInfo(CommunicationDataType.Termination, null, null, null);
+                return new CommunicationData(dataInfo, null, null, null);
+            }
+        }
+
+        /// <summary>
         /// Converts a string to a communication data object
         /// </summary>
         /// <param name="theString">The string to convert</param>

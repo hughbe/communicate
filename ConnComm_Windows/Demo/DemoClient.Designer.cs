@@ -17,11 +17,6 @@
             {
                 components.Dispose();
             }
-            if (client != null)
-            {
-                client.Dispose();
-                client = null;
-            }
             base.Dispose(disposing);
         }
 
@@ -87,6 +82,7 @@
             this.Controls.Add(this.listBox1);
             this.Name = "DemoClient";
             this.Text = "Client";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DemoClient_FormClosing);
             this.Load += new System.EventHandler(this.DemoClient_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

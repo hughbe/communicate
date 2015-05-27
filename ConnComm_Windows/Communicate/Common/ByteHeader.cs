@@ -6,7 +6,7 @@ using System.Text;
 namespace Communicate.Common
 {
     /// <summary>
-    /// Representing the byte header for the type of contentData of a TCP packet
+    /// Representing the byte header for the type of data of a TCP packet
     /// </summary>
     public class ByteHeader
     {
@@ -38,7 +38,7 @@ namespace Communicate.Common
         }
 
         /// <summary>
-        /// The type of contentData this header encodes for
+        /// The type of data this header encodes for
         /// </summary>
         public CommunicationDataType DataType
         {
@@ -52,7 +52,7 @@ namespace Communicate.Common
         /// </summary>
         /// <param name="byte1">The first byte value</param>
         /// <param name="byte2">The second byte value</param>
-        /// <param name="dataType">The type of contentData this header encodes for</param>
+        /// <param name="dataType">The type of data this header encodes for</param>
         public ByteHeader(Int32 byte1, Int32 byte2, CommunicationDataType dataType)
         {
             _byte1 = byte1;
@@ -69,48 +69,57 @@ namespace Communicate.Common
         }
 
         /// <summary>
-        /// The byte header for the string contentData type
+        /// The byte header for the string data type
         /// </summary>
-        /// <returns>The byte header for the string contentData type</returns>
+        /// <returns>The byte header for the string data type</returns>
         public static ByteHeader StringByteHeader
         {
             get { return new ByteHeader(0x01, 0x01, CommunicationDataType.String); }
         }
 
         /// <summary>
-        /// The byte header for the image contentData type
+        /// The byte header for the image data type
         /// </summary>
-        /// <returns>The byte header for the image contentData type</returns>
+        /// <returns>The byte header for the image data type</returns>
         public static ByteHeader ImageByteHeader
         {
             get { return new ByteHeader(0x02, 0x02, CommunicationDataType.Image); }
         }
 
         /// <summary>
-        /// The byte header for the file contentData type
+        /// The byte header for the file data type
         /// </summary>
-        /// <returns>The byte header for the file contentData type</returns>
+        /// <returns>The byte header for the file data type</returns>
         public static ByteHeader FileByteHeader
         {
             get { return new ByteHeader(0x03, 0x03, CommunicationDataType.File); }
         }
 
         /// <summary>
-        /// The byte header for the JSON contentData type
+        /// The byte header for the JSON data type
         /// </summary>
-        /// <returns>The byte header for the JSON contentData type</returns>
+        /// <returns>The byte header for the JSON data type</returns>
         public static ByteHeader JSONByteHeader
         {
             get { return new ByteHeader(0x04, 0x04, CommunicationDataType.JSON); }
         }
 
         /// <summary>
-        /// The byte header for the other contentData type
+        /// The byte header for the other data type
         /// </summary>
-        /// <returns>The byte header for the other contentData type</returns>
+        /// <returns>The byte header for the other data type</returns>
         public static ByteHeader OtherByteHeader
         {
             get { return new ByteHeader(0x09, 0x09, CommunicationDataType.Other); }
+        }
+
+        /// <summary>
+        /// The byte header for the other data type
+        /// </summary>
+        /// <returns>The byte header for the other data type</returns>
+        public static ByteHeader TerminationByteHeader
+        {
+            get { return new ByteHeader(0x00, 0x00, CommunicationDataType.Termination); }
         }
 
         /// <summary>
@@ -166,9 +175,9 @@ namespace Communicate.Common
         }
 
         /// <summary>
-        /// Generates unique hash code based off the byte contentData of the header
+        /// Generates unique hash code based off the byte data of the header
         /// </summary>
-        /// <returns>A unique hash code based off the byte contentData of the header</returns>
+        /// <returns>A unique hash code based off the byte data of the header</returns>
         public override int GetHashCode()
         {
             return _byte1 ^ _byte2;

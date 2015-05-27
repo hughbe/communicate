@@ -1,12 +1,12 @@
 ﻿using Communicate.Common;
 using System;
 
-namespace Communicate.Server
+namespace Communicate
 {
     /// <summary>
-    /// The class responsible for containing the backend information the server that dictates how the server will listen for and handle incoming connection requests and streams of contentData
+    /// The class responsible for containing the backend information the communicator that dictates how the communicator will listen for and handle incoming connection requests and streams of contentData
     /// </summary>
-    public class ServerInfo
+    public class CommunicatorInfo
     {
         private string _readableName;
         private int _port;
@@ -41,12 +41,12 @@ namespace Communicate.Server
         #endregion
         
         /// <summary>
-        /// The default constructor for the ServerInfo object
+        /// The default constructor for the CommunicatorInfo object
         /// </summary>
         /// <param name="readableName">The name of the server on the network when it publishes itself</param>
         /// <param name="port">The port for the server to listen on for incoming connection requests and contentData streams</param>
         /// <param name="txtRecordList">The list of TXTRecords that are published with the server giving more information about the server to devices wishing to connect to it</param>
-        public ServerInfo(string readableName, int port, TXTRecordList txtRecordList)
+        public CommunicatorInfo(string readableName, int port, TXTRecordList txtRecordList)
         {
             _readableName = readableName;
             _port = port;
@@ -61,7 +61,7 @@ namespace Communicate.Server
         /// <summary>
         /// Use of the empty constructor is prevented
         /// </summary>
-        private ServerInfo()
+        private CommunicatorInfo()
         {
 
         }

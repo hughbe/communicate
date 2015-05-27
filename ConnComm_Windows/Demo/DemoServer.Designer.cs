@@ -19,7 +19,6 @@
                 components = null;
                 listBox1.Dispose();
                 listBox1 = null;
-                server.Dispose();
                 server = null;
             }
             base.Dispose(disposing);

@@ -4,14 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A01FC31C-440C-43AE-9151-EC2705DB68D7}</ProjectGuid>
+    <ProjectGuid>{27835CAB-36F3-4F39-B658-5B3E2616D058}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ConnComm</RootNamespace>
-    <AssemblyName>ConnComm</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <RootNamespace>Communicate</RootNamespace>
+    <AssemblyName>Communicate</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,19 +31,45 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
     <Reference Include="ZeroconfService">
       <HintPath>..\packages\ZeroconfService.0.6.0.0\lib\net40\ZeroconfService.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\ByteHeader.cs" />
+    <Compile Include="Common\CommunicationData.cs" />
+    <Compile Include="Common\DataContent.cs" />
+    <Compile Include="Common\DataDetector.cs" />
+    <Compile Include="Common\DataFooter.cs" />
+    <Compile Include="Common\DataHeader.cs" />
+    <Compile Include="Common\DataHeaderFooter.cs" />
+    <Compile Include="Common\DataInfo.cs" />
+    <Compile Include="Common\DataSerializer.cs" />
+    <Compile Include="Common\DataType.cs" />
+    <Compile Include="Common\ProtocolInfo.cs" />
+    <Compile Include="Common\TransportProtocolType.cs" />
+    <Compile Include="Common\TXTRecord.cs" />
+    <Compile Include="Common\TXTRecordList.cs" />
+    <Compile Include="Communicator.cs" />
+    <Compile Include="CommunicatorInfo.cs" />
+    <Compile Include="Connecting\ClientConnectedState.cs" />
+    <Compile Include="Connecting\Connection.cs" />
+    <Compile Include="Connecting\ConnectionsManager.cs" />
+    <Compile Include="Listening\ListeningManager.cs" />
+    <Compile Include="Listening\ListeningState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ProtocolInfo.cs" />
-    <Compile Include="Server.cs" />
-    <Compile Include="ServerInfo.cs" />
-    <Compile Include="TransportProtocolType.cs" />
-    <Compile Include="TXTRecords\TXTRecord.cs" />
-    <Compile Include="TXTRecords\TXTRecordList.cs" />
+    <Compile Include="Publishing\PublishingManager.cs" />
+    <Compile Include="Publishing\PublishingState.cs" />
+    <Compile Include="Searching\SearchingManager.cs" />
+    <Compile Include="Searching\SearchingState.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

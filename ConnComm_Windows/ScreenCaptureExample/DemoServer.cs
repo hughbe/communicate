@@ -8,10 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Communicate;
-using Communicate.Client;
 using Communicate.Common;
 using ZeroconfService;
-using Communicate.Server;
+using Communicate.Connecting;
 
 namespace ScreenCaptureExample
 {
@@ -22,19 +21,19 @@ namespace ScreenCaptureExample
             InitializeComponent();
         }
 
-        private Server server;
+        private Communicator server;
         private void Screen_Load(object sender, EventArgs e)
         {
-            ServerInfo serverInfo = new ServerInfo(Environment.MachineName, 12345, null);
-            ProtocolInfo protocolInfo = new ProtocolInfo("_ClickBoard", TransportProtocolType.TCP, ProtocolInfo.ProtocolDomainLocal);
+            CommunicatorInfo communicatorInfo = new CommunicatorInfo(Environment.MachineName, 12345, null);
+            ProtocolInfo protocolInfo = new ProtocolInfo("_Test", TransportProtocolType.TCP, ProtocolInfo.ProtocolDomainLocal);
 
-            server = new Server(serverInfo, protocolInfo);
-            server.ServerDidReceiveDataFromClient += ServerDidReceiveDataFromClient;
+            server = new Communicator(protocolInfo, communicatorInfo);
+            server.DidReceiveData += DidReceiveData;
 
-            server.PublishAndListen();
+            server.PublishAndStartListening();
         }
 
-        private void ServerDidReceiveDataFromClient(Server server, ConnectedClient client, CommunicationData data)
+        private void DidReceiveData(Communicator communicator, Connection connection, CommunicationData data)
         {
             if (data.GetDataType() == CommunicationDataType.Image)
             {

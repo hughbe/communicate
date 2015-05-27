@@ -34,7 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Communicate">
-      <HintPath>..\Connect and Communicate Libary\bin\Debug\Communicate.dll</HintPath>
+      <HintPath>..\Communicate\bin\Debug\Communicate.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

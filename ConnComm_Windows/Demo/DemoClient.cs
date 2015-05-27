@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Communicate;
 using ZeroconfService;
-using Communicate.Client;
 using Communicate.Common;
 using System.IO;
 using System.Threading;
+using Communicate.Connecting;
 
 namespace Demo
 {
@@ -23,96 +23,100 @@ namespace Demo
             InitializeComponent();
         }
 
-        private Client client;
+        private Communicator client;
 
         private void DemoClient_Load(object sender, EventArgs e)
-        {        
-            ProtocolInfo protocolInfo = new ProtocolInfo("_ClickBoard", TransportProtocolType.TCP, ProtocolInfo.ProtocolDomainLocal);
-            ClientInfo clientInfo = new ClientInfo(12345);
-            client = new Client(protocolInfo, clientInfo);
-            client.ClientDidStartSearching += ClientDidStartSearching;
-            client.ClientDidNotSearch += ClientDidNotSearch;
-            client.ClientDidUpdateServices += ClientDidUpdateServices;
+        {
+            ProtocolInfo protocolInfo = new ProtocolInfo("_Test", TransportProtocolType.TCP, ProtocolInfo.ProtocolDomainLocal);
+            CommunicatorInfo communicatorInfo = new CommunicatorInfo(Environment.MachineName, 12345, null);
 
-            client.ClientDidStartConnecting += ClientDidStartConnecting;
-            client.ClientDidConnect += ClientDidConnect;
-            client.ClientDidNotConnect += ClientDidNotConnect;
-            client.ClientDidDisconnect += ClientDidDisconnect;
+            client = new Communicator(protocolInfo, communicatorInfo);
+            client.DidStartSearching += DidStartSearching;
+            client.DidDiscoverServices += DidUpdateServices;
+            client.DidNotStartSearching += DidNotSearch;
 
-            client.ClientDidReceiveData += ClientDidReceiveData;
-            client.ClientDidSendData += ClientDidSendData;
-            client.ClientDidNotSendData += ClientDidNotSendData;
+            client.DidStartConnecting += DidStartConnecting;
+            client.DidConnect += DidConnect;
+            client.DidNotConnect += DidNotConnect;
+            client.DidDisconnect += DidDisconnect;
 
-            client.Search();
+            client.DidReceiveData += DidReceiveData;
+            client.DidSendData += DidSendData;
+            client.DidNotSendData += DidNotSendData;
+
+            client.StartSearching();
             textBox1.Enabled = false;
             button1.Enabled = false;
             button3.Enabled = false;
         }
 
-        private void ClientDidStartSearching(Client client) 
+        private void DidStartSearching(Communicator communicator) 
         {
             //Console.WriteLine("CLIENT: Started Searching");
         }
 
-        private void ClientDidNotSearch(Client client, Exception exception)
+        private void DidNotSearch(Communicator communicator, Exception exception)
         {
             //Console.WriteLine("CLIENT: Failed to search. Reason: " + exception.ToString());
         }
         
-        private void ClientDidUpdateServices(Client client)
+        private void DidUpdateServices(Communicator communicator, List<NetService>services)
         {
             listBox1.Items.Clear();
-            foreach (NetService service in client.Services)
+            foreach (NetService service in services)
             {
                 //Console.WriteLine(service.Name);
                 listBox1.Items.Add(service.Name);
             }
         }
 
-        private void ClientDidStartConnecting(Client client)
+        private void DidStartConnecting(Communicator communicator, Connection connection)
         {
             //Console.WriteLine("CLIENT: Connecting to server");
         }
 
-        private void ClientDidConnect(Client client)
+        private void DidConnect(Communicator communicator, Connection connection)
         {
             //Console.WriteLine("CLIENT: Connected to server");
-            client.SendString("Hi server", Encoding.ASCII);
+            client.ConnectionManager.SendString("Hi server", Encoding.ASCII);
             textBox1.Enabled = true;
             button1.Enabled = true;
             button3.Enabled = true;
         }
 
-        private void ClientDidNotConnect(Client client, Exception exception)
+        private void DidNotConnect(Communicator communicator, Connection connection, Exception exception)
         {
             //Console.WriteLine("CLIENT: Did not connect to server. Reason: " + exception.ToString());
         }
 
-        private void ClientDidDisconnect(Client client)
+        private void DidDisconnect(Communicator communicator, Connection connection)
         {
-            //Console.WriteLine("CLIENT: Disconnected");
+            Console.WriteLine("CLIENT: Disconnected");
+            Invoke(new Action(() => textBox1.Enabled = false));
+            Invoke(new Action(() => button1.Enabled = false));
+            Invoke(new Action(() => button3.Enabled = false));
         }
-        
-        private void ClientDidReceiveData(Client client, CommunicationData data)
+
+        private void DidReceiveData(Communicator communicator, Connection connection, CommunicationData data)
         {
             Console.WriteLine("CLIENT: received data: " + Encoding.ASCII.GetString(data.DataContent.GetBytes()));
         }
 
-        private void ClientDidSendData(Client client, CommunicationData data)
+        private void DidSendData(Communicator communicator, Connection connection, CommunicationData data)
         {
             //Console.WriteLine("CLIENT: Sent data");
         }
 
-        private void ClientDidNotSendData(Client client, CommunicationData data, Exception exception)
+        private void DidNotSendData(Communicator communicator, Connection connection, CommunicationData data, Exception exception)
         {
             //Console.WriteLine("CLIENT: Failed to send: " + Encoding.ASCII.GetString(data) + "; Reason: " + exception.ToString());
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (listBox1.SelectedIndex >= 0 && listBox1.SelectedIndex < client.Services.Count && (client.ConnectedState == ClientConnectedState.NotConnected || client.ConnectedState == ClientConnectedState.ErrorConnecting || client.ConnectedState == ClientConnectedState.Disconnected)) 
+            if (listBox1.SelectedIndex >= 0 && listBox1.SelectedIndex < client.SearchingManager.Services.Count) 
             {
-                NetService service = client.Services[listBox1.SelectedIndex];
+                NetService service = client.SearchingManager.Services[listBox1.SelectedIndex];
                 client.ConnectToService(service);
             }
         }
@@ -132,7 +136,7 @@ namespace Demo
 
         public void SendTextBoxData() 
         {
-            client.SendString(textBox1.Text);
+            client.ConnectionManager.SendString(textBox1.Text);
             textBox1.Text = "";
         }
 
@@ -145,9 +149,14 @@ namespace Demo
             {
                 foreach (string filePath in dialog.FileNames) 
                 {
-                    client.SendFile(filePath);
+                    client.ConnectionManager.SendFile(filePath);
                 }
             }  
+        }
+
+        private void DemoClient_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            client.Stop();
         }
     }
 }

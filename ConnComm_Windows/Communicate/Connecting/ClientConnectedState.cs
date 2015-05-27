@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Communicate.Client
+namespace Communicate.Connecting
 {
     /// <summary>
-    /// An enum that represents the connected state of a client
+    /// An enum that represents the connected state of a connection
     /// </summary>
-    public enum ClientConnectedState
+    public enum ConnectedState
     {
         NotConnected,
         Connecting,
