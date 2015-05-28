@@ -5,7 +5,7 @@ using System.Text;
 using Communicate.Common;
 using Communicate.Listening;
 using Communicate.Publishing;
-using Communicate.Connecting;
+using Communicate.Connections;
 using System.Net.Sockets;
 using Communicate.Searching;
 using ZeroconfService;
@@ -377,6 +377,14 @@ namespace Communicate
         public void StartSearching()
         {
             _searchingManager.StartSearching();
+        }
+
+        /// <summary>
+        /// Restarts searching for devices on the network
+        /// </summary>
+        public void RestartSearching()
+        {
+            _searchingManager.RestartSearching();
         }
 
         /// <summary>

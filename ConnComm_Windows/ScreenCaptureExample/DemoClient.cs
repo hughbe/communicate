@@ -12,7 +12,7 @@ using Communicate.Common;
 using ZeroconfService;
 using System.Threading;
 using System.Drawing.Imaging;
-using Communicate.Connecting;
+using Communicate.Connections;
 
 namespace ScreenCaptureExample
 {

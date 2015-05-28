@@ -12,7 +12,7 @@ using ZeroconfService;
 using Communicate.Common;
 using System.IO;
 using System.Threading;
-using Communicate.Connecting;
+using Communicate.Connections;
 
 namespace Demo
 {

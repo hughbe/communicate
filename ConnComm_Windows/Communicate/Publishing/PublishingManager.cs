@@ -118,6 +118,11 @@ namespace Communicate.Publishing
         /// </summary>
         public void Publish()
         {
+            if (_publishingState == PublishingState.Publishing || _publishingState == PublishingState.Published)
+            {
+                return;
+            }
+
             _publishingState = PublishingState.Publishing;
             try
             {

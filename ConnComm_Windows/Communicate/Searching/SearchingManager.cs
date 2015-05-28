@@ -10,8 +10,8 @@ using ZeroconfService;
 namespace Communicate.Searching
 {
     internal delegate void StartedSearching(SearchingManager searchingManager);
-    internal delegate void NotSearching(SearchingManager searchingManager, Exception reason);
     internal delegate void FoundServices(SearchingManager searchingManager, List<NetService> services);
+    internal delegate void NotSearching(SearchingManager searchingManager, Exception reason);
     internal delegate void StoppedSearching(SearchingManager searchingManager);
 
     public class SearchingManager : IDisposable
@@ -145,24 +145,14 @@ namespace Communicate.Searching
         }
 
         /// <summary>
-        /// The delegate method called when a Bonjour browser removes a service that was previously published on the network
+        /// Restarts searching for devices on the network
         /// </summary>
-        /// <param name="browser">The Bonjour browser that removed the Bonjour service previously published on the network</param>
-        /// <param name="service">The Bonjour service that was previously published on the network but no longer is published</param>
-        /// <param name="moreComing">If there are more previously published Bonjour services that are to be removed</param>
-        private void netServiceBrowser_DidRemoveService(NetServiceBrowser browser, NetService service, bool moreComing)
+        public void RestartSearching()
         {
-            if (_services.Contains(service))
-            {
-                _services.Remove(service);
-            }
-            if (!moreComing)
-            {
-                if (DidFindServices != null)
-                {
-                    DidFindServices(this, _services);
-                }
-            }
+            _browser.Stop();
+            _services.Clear();
+            _searchingState = SearchingState.NotSearching;
+            StartSearching();
         }
 
         /// <summary>
@@ -187,6 +177,27 @@ namespace Communicate.Searching
                 {
                     _services.Add(service);
                 }
+            }
+            if (!moreComing)
+            {
+                if (DidFindServices != null)
+                {
+                    DidFindServices(this, _services);
+                }
+            }
+        }
+
+        /// <summary>
+        /// The delegate method called when a Bonjour browser removes a service that was previously published on the network
+        /// </summary>
+        /// <param name="browser">The Bonjour browser that removed the Bonjour service previously published on the network</param>
+        /// <param name="service">The Bonjour service that was previously published on the network but no longer is published</param>
+        /// <param name="moreComing">If there are more previously published Bonjour services that are to be removed</param>
+        private void netServiceBrowser_DidRemoveService(NetServiceBrowser browser, NetService service, bool moreComing)
+        {
+            if (_services.Contains(service))
+            {
+                _services.Remove(service);
             }
             if (!moreComing)
             {

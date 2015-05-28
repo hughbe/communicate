@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using Communicate;
 using Communicate.Common;
 using ZeroconfService;
-using Communicate.Connecting;
+using Communicate.Connections;
 
 namespace ScreenCaptureExample
 {

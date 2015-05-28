@@ -11,7 +11,8 @@ using Communicate;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using Communicate.Common;
-using Communicate.Connections;
+using Communicate.Server;
+using Communicate.Connecting;
 
 namespace Demo
 {
@@ -30,7 +31,7 @@ namespace Demo
             recordList.AddTXTRecord("platform", "windows");
             recordList.AddTXTRecord("publish_time", DateTime.Now.ToString());
             
-            ProtocolInfo protocolInfo = new ProtocolInfo("_Test", TransportProtocolType.TCP, ProtocolInfo.ProtocolDomainLocal);
+            ProtocolInfo protocolInfo = new ProtocolInfo("_ClickBoard", TransportProtocolType.TCP, ProtocolInfo.ProtocolDomainLocal);
             CommunicatorInfo communicatorInfo = new CommunicatorInfo(Environment.MachineName, 62930, recordList);
 
             server = new Communicator(protocolInfo, communicatorInfo);
@@ -50,7 +51,7 @@ namespace Demo
 
             server.DidReceiveData += ServerDidReceiveData;
             server.DidSendData += ServerDidSendData;
-            server.DidNotSendData += ServerDidNotSendData;
+            server.DidReceiveData += ServerDidReceiveData;
 
             server.Publish();
             server.StartListening();
@@ -192,7 +193,7 @@ namespace Demo
             listBox1.Invoke(new Action(() => listBox1.Items.Add("SERVER: Sent data to the client")));
         }
 
-        private void ServerDidNotSendData(Communicator communicator, Connection connection, CommunicationData data, Exception exception)
+        private void ServerDidNotSendData(Communicator communicator, byte[] data, Exception exception, Connection connection)
         {
             //Console.WriteLine("SERVER: Did not send data to the client. Reason: " + exception.ToString());
             listBox1.Invoke(new Action(() => listBox1.Items.Add("SERVER: Did not send data to the client. Reason: " + exception.ToString())));
@@ -213,7 +214,7 @@ namespace Demo
 
         public void SendTextBoxTextToAllClients()
         {
-            server.ConnectionManager.SendString(textBox1.Text);
+            //server.SendStringToAllClients(textBox1.Text);
             textBox1.Text = "";
         }
     }

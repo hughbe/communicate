@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Communicate
+namespace Communicate.Searching
 {
     /// <summary>
     /// An enum that represents the searching state of a communicator

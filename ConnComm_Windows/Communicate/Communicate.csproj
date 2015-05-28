@@ -60,9 +60,9 @@
     <Compile Include="Common\TXTRecordList.cs" />
     <Compile Include="Communicator.cs" />
     <Compile Include="CommunicatorInfo.cs" />
-    <Compile Include="Connecting\ClientConnectedState.cs" />
-    <Compile Include="Connecting\Connection.cs" />
-    <Compile Include="Connecting\ConnectionsManager.cs" />
+    <Compile Include="Connections\ClientConnectedState.cs" />
+    <Compile Include="Connections\Connection.cs" />
+    <Compile Include="Connections\ConnectionsManager.cs" />
     <Compile Include="Listening\ListeningManager.cs" />
     <Compile Include="Listening\ListeningState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
