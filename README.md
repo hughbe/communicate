@@ -51,6 +51,7 @@ client.StartSearching();
 4. **Subscribe to the delegate events** and look at the demo programs to learn more
 
 ###Example use as a Server
+```
 TXTRecordList *TXTRecords = [[TXTRecordList alloc]init];
 [TXTRecords addTXTRecordWithKey:"platform" value:"iOS"];
 
