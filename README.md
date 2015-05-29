@@ -65,7 +65,8 @@ Server *server = [[Communicator alloc]initWithProtocolInfo:protocol communicator
 
 ###Example use as a Client
 ```
-ProtocolInfo *protocol = [[ProtocolInfo alloc]initWithProtocolName:@"Test" protocolType:TransportProtocolTypeTCP domain:nil];    CommunicatorInfo *communicatorInfo = [[CommunicatorInfo alloc]initWithName:[UIDevice currentDevice].name port:54321 txtRecordList:nil];
+ProtocolInfo *protocol = [[ProtocolInfo alloc]initWithProtocolName:@"Test" protocolType:TransportProtocolTypeTCP domain:nil];
+CommunicatorInfo *communicatorInfo = [[CommunicatorInfo alloc]initWithName:[UIDevice currentDevice].name port:54321 txtRecordList:nil];
 Client *client = self.client = [[Communicator alloc]initWithProtocolInfo:protocol communicatorInfo:communicatorInfo delegate:self];
 [client startSearching];
 ```
