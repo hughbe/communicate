@@ -11,10 +11,8 @@
 @implementation ServerViewController
 
 - (void)viewDidLoad {
-    TXTRecordList *TXTRecords = [[TXTRecordList alloc]init];
-    [TXTRecords addTXTRecordWithKey:"platform" value:"iOS"];
-
-    CommunicatorInfo *communicatorInfo = [[CommunicatorInfo alloc]initWithName:[UIDevice currentDevice].name port:12345 txtRecordList:TXTRecords];
+    int port = 10234;
+    CommunicatorInfo *communicatorInfo = [[CommunicatorInfo alloc]initWithName:[UIDevice currentDevice].name port:port txtRecordList:nil];
     ProtocolInfo *protocol = [[ProtocolInfo alloc]initWithProtocolName:@"Test" protocolType:TransportProtocolTypeTCP domain:nil];
     
     self.server = [[Communicator alloc]initWithProtocolInfo:protocol communicatorInfo:communicatorInfo delegate:self];

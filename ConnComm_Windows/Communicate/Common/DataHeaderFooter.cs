@@ -95,6 +95,10 @@ namespace Communicate.Common
         /// <returns>A JSON string containing the footer data</returns>
         public string GetJSON()
         {
+            if (_footerDictionary == null)
+            {
+                return "";
+            }
             if (_footerDictionary.Count > 0)
             {
                 return new JavaScriptSerializer().Serialize(_footerDictionary);
@@ -111,7 +115,12 @@ namespace Communicate.Common
         /// <returns>A byte array containing the footer data</returns>
         public byte[] GetBytes()
         {
-            return Encoding.ASCII.GetBytes(GetJSON());
+            byte[] bytes =  Encoding.ASCII.GetBytes(GetJSON());
+            if (bytes == null)
+            {
+                bytes = new byte[0];
+            }
+            return bytes;
         }
 
         #region Accessors and Mutators
@@ -122,7 +131,14 @@ namespace Communicate.Common
         /// <returns>The value of a specified key</returns>
         public string ValueForKey(string key)
         {
-            return _footerDictionary[key];
+            if (_footerDictionary.ContainsKey(key))
+            {
+                return _footerDictionary[key];
+            }
+            else
+            {
+                return "";
+            }
         }
 
         /// <summary>
@@ -132,7 +148,14 @@ namespace Communicate.Common
         /// <param name="key">The key to set the value for</param>
         public void SetValueForKey(string value, string key)
         {
-            _footerDictionary[key] = value;
+            if (_footerDictionary.ContainsKey(key))
+            {
+                _footerDictionary[key] = value;
+            }
+            else
+            {
+                _footerDictionary.Add(key, value);
+            }
         }
 
         /// <summary>
@@ -142,7 +165,14 @@ namespace Communicate.Common
         /// <returns>The integer value of a specified key</returns>
         public int IntegerForKey(string key)
         {
-            return Convert.ToInt32(_footerDictionary[key]);
+            if (_footerDictionary.ContainsKey(key))
+            {
+                return Convert.ToInt32(_footerDictionary[key]);
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         /// <summary>
@@ -152,7 +182,14 @@ namespace Communicate.Common
         /// <param name="key">The key to set the value for</param>
         public void SetIntegerForKey(int value, string key)
         {
-            _footerDictionary[key] = Convert.ToString(value);
+            if (_footerDictionary.ContainsKey(key))
+            {
+                _footerDictionary[key] = Convert.ToString(value);
+            }
+            else
+            {
+                _footerDictionary.Add(key, Convert.ToString(value));
+            }
         }
 
         /// <summary>
@@ -162,7 +199,14 @@ namespace Communicate.Common
         /// <returns>The bool value of a specified key</returns>
         public bool BoolForKey(string key)
         {
-            return Convert.ToBoolean(_footerDictionary[key]);
+            if (_footerDictionary.ContainsKey(key))
+            {
+                return Convert.ToBoolean(_footerDictionary[key]);
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -172,7 +216,14 @@ namespace Communicate.Common
         /// <param name="key">The key to set the value for</param>
         public void SetBoolForKey(bool value, string key)
         {
-            _footerDictionary[key] = Convert.ToString(value);
+            if (_footerDictionary.ContainsKey(key))
+            {
+                _footerDictionary[key] = Convert.ToString(value);
+            }
+            else
+            {
+                _footerDictionary.Add(key, Convert.ToString(value));
+            }
         }
 
         /// <summary>
@@ -182,7 +233,10 @@ namespace Communicate.Common
         /// <param name="value">The value of the new footer record</param>
         public void AddFooterEntry(string key, string value)
         {
-            _footerDictionary.Add(key, value);
+            if (!_footerDictionary.ContainsKey(key))
+            {
+                _footerDictionary.Add(key, value);
+            }
         }
 
         /// <summary>
@@ -192,7 +246,10 @@ namespace Communicate.Common
         /// <param name="value">The integer value of the new footer record</param>
         public void AddFooterEntry(string key, int value)
         {
-            _footerDictionary.Add(key, Convert.ToString(value));
+            if (!_footerDictionary.ContainsKey(key))
+            {
+                _footerDictionary.Add(key, Convert.ToString(value));
+            }
         }
 
         /// <summary>
@@ -202,8 +259,12 @@ namespace Communicate.Common
         /// <param name="value">The bool value of the new footer record</param>
         public void AddFooterEntry(string key, bool value)
         {
-            _footerDictionary.Add(key, Convert.ToString(value));
+            if (!_footerDictionary.ContainsKey(key))
+            {
+                _footerDictionary.Add(key, Convert.ToString(value));
+            }
         }
+
         #endregion
 
         /// This overrides the ToString method of this object to give more information for debugging use

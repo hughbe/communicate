@@ -87,23 +87,49 @@ namespace Communicate.Common
             }
             else
             {
-                _headerLength = header.GetBytes().Length;
+                byte[] bytes = header.GetBytes();
+                if (bytes != null)
+                {
+                    _headerLength = bytes.Length;
+                }
+                else
+                {
+                    _headerLength = 0;
+                }
             }
+
             if (content == null)
             {
                 _contentLength = 0;
             }
             else
             {
-                _contentLength = content.GetBytes().Length;
+                byte[] bytes = content.GetBytes();
+                if (bytes != null)
+                {
+                    _contentLength = bytes.Length;
+                }
+                else
+                {
+                    _contentLength = 0;
+                }
             }
+
             if (footer == null)
             {
                 _footerLength = 0;
             }
             else
             {
-                _footerLength = footer.GetBytes().Length;
+                byte[] bytes = footer.GetBytes();
+                if (bytes != null)
+                {
+                    _footerLength = bytes.Length;
+                }
+                else
+                {
+                    _footerLength = 0;
+                }
             }
         }
 

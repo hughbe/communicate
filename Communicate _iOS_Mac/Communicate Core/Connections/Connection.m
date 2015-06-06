@@ -26,6 +26,9 @@
 
 - (void)setupWithReadStream:(CFReadStreamRef)readStream writeStream:(CFWriteStreamRef)writeStream;
 
+
+@property (strong, nonatomic) NSRunLoop *runLoop;
+
 @end
 
 @implementation Connection
@@ -71,21 +74,28 @@
 
 - (void)setupWithReadStream:(CFReadStreamRef)readStream writeStream:(CFWriteStreamRef)writeStream {
     self.connectionState = ConnectionStateConnected;
-    if([self.delegate respondsToSelector:@selector(connectionDidConnect:)]) {
-        [self.delegate connectionDidConnect:self];
-    }
     
     self.inputStream = (__bridge NSInputStream *)readStream;
     self.outputStream = (__bridge NSOutputStream *)writeStream;
     
     self.inputStream.delegate = self;
     self.outputStream.delegate = self;
-    
-    [self.inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [self.inputStream open];
-    
-    //[self.outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [self.outputStream open];
+    // here: change the queue type and use a background queue (you can change priority)
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_async(queue, ^ {
+        [self.inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        [self.outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        
+        [self.inputStream open];
+        [self.outputStream open];
+        self.runLoop = [NSRunLoop currentRunLoop];
+        dispatch_async(dispatch_get_main_queue(), ^ {
+            if([self.delegate respondsToSelector:@selector(connectionDidConnect:)]) {
+                [self.delegate connectionDidConnect:self];
+            }
+        });
+        [[NSRunLoop currentRunLoop] run];
+    });
     
     if (readStream != NULL) {
         CFRelease(readStream);
@@ -119,7 +129,7 @@
         }
     }
     else {
-        [self.netService resolveWithTimeout:30];
+        [self.netService resolveWithTimeout:10];
     }
 }
 
@@ -175,78 +185,76 @@
         }
     }
     else if(eventCode == NSStreamEventHasBytesAvailable) {
-        @try {
         NSUInteger infoLength = [DataInfo length];
         
         uint8_t infoBuffer[infoLength];
         [self.inputStream read:infoBuffer maxLength:infoLength];
         NSData *infoData = [[NSData alloc]initWithBytes:(const void *)infoBuffer length:infoLength];
         DataInfo *dataInfo = [[DataInfo alloc]initWithData:infoData];
-        
-        NSData *headerData = [NSData data];
-        if(dataInfo.headerLength > 0) {
-            uint8_t headerBuffer[dataInfo.headerLength];
-            
-            NSInteger headerBytesRead = 0;
-            while (headerBytesRead < dataInfo.headerLength) {
-                NSInteger readResult = [self.inputStream read:headerBuffer + headerBytesRead maxLength:dataInfo.headerLength - headerBytesRead];
-                if(readResult != -1) {
-                    headerBytesRead += readResult;
-                }
-            }
-            
-            headerData = [[NSData alloc]initWithBytes:(const void *)headerBuffer length:dataInfo.headerLength];
+        if(dataInfo.dataType == CommunicationDataTypeTermination) {
+            [self disconnect:NO];
+            return;
         }
+        
+        if([self.delegate respondsToSelector:@selector(connectionDidStartReceivingData:)]) {
+            dispatch_async(dispatch_get_main_queue(),^ {
+                [self.delegate connectionDidStartReceivingData:self];
+            });
+        }
+        
+        NSInteger headerLength = dataInfo.headerLength;
+        NSData *headerData = [self read:headerLength callback:nil];
+        
         DataHeader *header = [[DataHeader alloc]initWithData:headerData];
         
-        NSData *contentData = [NSData data];
-        if(dataInfo.contentLength > 0) {
-            uint8_t contentBuffer[dataInfo.contentLength];
-            
-            NSInteger dataBytesRead = 0;
-            while (dataBytesRead < dataInfo.contentLength) {
-                NSInteger readResult = [self.inputStream read:contentBuffer + dataBytesRead maxLength:dataInfo.contentLength - dataBytesRead];
-                if(readResult != -1) {
-                    dataBytesRead += readResult;
-                }
+        NSInteger contentLength = dataInfo.contentLength;
+        NSData *contentData = [self read:contentLength callback:^(NSInteger bytesRead, NSInteger length) {
+            if([self.delegate respondsToSelector:@selector(connection:didUpdateReceivingData:)]) {
+                CGFloat completion = (CGFloat)(bytesRead)/(CGFloat)(length);
+                dispatch_async(dispatch_get_main_queue(),^ {
+                    [self.delegate connection:self didUpdateReceivingData:completion];
+                });
             }
-            
-            contentData = [[NSData alloc]initWithBytes:(const void *)contentBuffer length:dataInfo.contentLength];
-        }
+        }];
         
         DataContent *content = [[DataContent alloc]initWithData:contentData];
         
-        NSData *footerData = [NSData data];
-        if(dataInfo.footerLength > 0) {
-            uint8_t footerBuffer[dataInfo.footerLength];
-            
-            NSInteger footerBytesRead = 0;
-            while (footerBytesRead < dataInfo.footerLength) {
-                NSInteger readResult = [self.inputStream read:footerBuffer + footerBytesRead maxLength:dataInfo.contentLength - footerBytesRead];
-                if(readResult != -1) {
-                    footerBytesRead += readResult;
-                }
-            }
-            
-            footerData = [[NSData alloc]initWithBytes:(const void *)footerBuffer length:dataInfo.footerLength];
-        }
+        NSInteger footerLength = dataInfo.footerLength;
+        NSData *footerData = [self read:footerLength callback:nil];
         
         DataFooter *footer = [[DataFooter alloc]initWithData:footerData];
         
-        CommunicationData *receivedData = [[CommunicationData alloc]initWithInfo:dataInfo header:header content:content footer:footer];
+        CommunicationData *receivedData = [[CommunicationData alloc]initWithType:dataInfo.dataType header:header content:content footer:footer];
         dispatch_async(dispatch_get_main_queue(),^ {
-            if(dataInfo.dataType == CommunicationDataTypeTermination) {
-                [self disconnect:NO];
-            }
-            else if([self.delegate respondsToSelector:@selector(connection:didReceiveData:)]) {
+            if([self.delegate respondsToSelector:@selector(connection:didReceiveData:)]) {
                 [self.delegate connection:self didReceiveData:receivedData];
             }
         });
-        }
-        @catch (NSException *exception) {
-            NSLog(@"%@", exception);
+    }
+}
+
+- (NSData *)read:(NSInteger)length callback:(void(^)(NSInteger bytesRead, NSInteger length))callback {
+    NSMutableData *data = [[NSMutableData alloc]init];
+    if(length > 0) {
+        NSInteger maxPacketSize = MIN(length, 4096);
+        NSInteger bytesRead = 0;
+        
+        while (bytesRead < length) {
+            uint8_t buffer[maxPacketSize];
+            NSInteger readResult = [self.inputStream read:buffer maxLength:maxPacketSize];
+            if(readResult > 0) {
+                bytesRead += readResult;
+                [data appendBytes:buffer length:readResult];
+            }
+            else {
+                return nil;
+            }
+            if(callback) {
+                callback(bytesRead, length);
+            }
         }
     }
+    return data;
 }
 
 - (void)sendString:(NSString *)string {
@@ -382,13 +390,20 @@
     else {
         self.connectionState = ConnectionStateDisconnected;
         [self.inputStream close];
-        [self.inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode: NSDefaultRunLoopMode];
+        [self.inputStream removeFromRunLoop:self.runLoop forMode: NSDefaultRunLoopMode];
         self.inputStream.delegate = nil;
         self.inputStream = nil;
-    
+        
         [self.outputStream close];
+        [self.inputStream removeFromRunLoop:self.runLoop forMode: NSDefaultRunLoopMode];
         self.outputStream.delegate = nil;
         self.outputStream = nil;
+        
+        self.runLoop = nil;
+        
+        if([self.delegate respondsToSelector:@selector(connectionDidDisconnect:)]) {
+            [self.delegate connectionDidDisconnect:self];
+        }
     }
 }
 

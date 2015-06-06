@@ -48,7 +48,7 @@
     if(self.ipv4Socket == NULL) {
         self.listeningState = ListeningStateErrorListening;
         if(self.ipv4Socket != NULL) {
-            CFRelease(self.ipv4Socket);
+            CFRelease(_ipv4Socket);
         }
         self.ipv4Socket = NULL;
         
@@ -74,7 +74,7 @@
     if(CFSocketSetAddress(self.ipv4Socket, sincfd) != kCFSocketSuccess) {
         self.listeningState = ListeningStateErrorListening;
         if(self.ipv4Socket != NULL) {
-            CFRelease(self.ipv4Socket);
+            CFRelease(_ipv4Socket);
         }
         self.ipv4Socket = NULL;
         CFRelease(sincfd);
@@ -104,17 +104,8 @@ static void ServerAcceptCallBack(CFSocketRef socket, CFSocketCallBackType type, 
         
         struct sockaddr_in peerAddress;
         socklen_t peerLen = sizeof(peerAddress);
-        NSString * peer = nil;
         
-        if (getpeername(nativeSocketHandle, (struct sockaddr *)&peerAddress, (socklen_t *)&peerLen) == 0) {
-            peer = [NSString stringWithUTF8String:inet_ntoa(peerAddress.sin_addr)];
-        } else {
-            peer = @"Generic Peer";
-        }
-        
-        
-        NSLog(@"%@ has connected", peer);
-        
+        getpeername(nativeSocketHandle, (struct sockaddr *)&peerAddress, (socklen_t *)&peerLen);
         if([listeningManager.delegate respondsToSelector:@selector(listeningManager:didReceiveConnectionRequest:)]) {
             [listeningManager.delegate listeningManager:listeningManager didReceiveConnectionRequest:nativeSocketHandle];
         }
@@ -126,7 +117,7 @@ static void ServerAcceptCallBack(CFSocketRef socket, CFSocketCallBackType type, 
         self.listeningState = ListeningStateStoppedListening;
         
         CFSocketInvalidate(self.ipv4Socket);
-        CFRelease(self.ipv4Socket);
+        CFRelease(_ipv4Socket);
         self.ipv4Socket = NULL;
         
         if([self.delegate respondsToSelector:@selector(listeningManagerDidStopListening:)]) {

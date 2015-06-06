@@ -31,9 +31,11 @@
     self = [super init];
     if(self) {
         self.dataType = dataType;
-        self.headerLength = [header getData].length;
-        self.contentLength = [content getData].length;
-        self.footerLength = [footer getData].length;
+        if(dataType != CommunicationDataTypeTermination) {
+            self.headerLength = [header getData].length;
+            self.contentLength = [content getData].length;
+            self.footerLength = [footer getData].length;
+        }
     }
     return self;
 }

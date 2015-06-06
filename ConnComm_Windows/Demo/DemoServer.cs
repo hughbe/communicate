@@ -30,7 +30,7 @@ namespace Demo
             recordList.AddTXTRecord("platform", "windows");
             recordList.AddTXTRecord("publish_time", DateTime.Now.ToString());
             
-            ProtocolInfo protocolInfo = new ProtocolInfo("_Test", TransportProtocolType.TCP, ProtocolInfo.ProtocolDomainLocal);
+            ProtocolInfo protocolInfo = new ProtocolInfo("Test", TransportProtocolType.TCP, ProtocolInfo.ProtocolDomainLocal);
             CommunicatorInfo communicatorInfo = new CommunicatorInfo(Environment.MachineName, 62930, recordList);
 
             server = new Communicator(protocolInfo, communicatorInfo);

@@ -65,7 +65,7 @@
                 break;
             }
         }
-        if(addService) {
+        if(addService && aNetService) {
             self.services = [self.services arrayByAddingObject:aNetService];
         }
     }

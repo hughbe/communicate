@@ -1,5 +1,5 @@
 //
-//  ReceivedData.m
+//  CommunicationData.m
 //  Communicate
 //
 //  Created by Hugh Bellamy on 25/05/2015.
@@ -24,10 +24,10 @@
 
 @implementation CommunicationData
 
-- (instancetype)initWithInfo:(DataInfo *)dataInfo header:(DataHeader *)header content:(DataContent *)content footer:(DataFooter *)footer {
+- (instancetype)initWithType:(CommunicationDataType)dataType header:(DataHeader *)header content:(DataContent *)content footer:(DataFooter *)footer {
     self = [super init];
     if(self) {
-        self.dataInfo = dataInfo;
+        self.dataInfo = [[DataInfo alloc]initWithDataType:dataType header:header content:content footer:footer];
         self.header = header;
         self.content = content;
         self.footer = footer;
@@ -40,9 +40,7 @@
     DataContent *content = [[DataContent alloc]initWithString:string withEncoding:encoding];
     DataFooter *footer = [[DataFooter alloc]init];
     
-    DataInfo *dataInfo = [[DataInfo alloc]initWithDataType:CommunicationDataTypeString header:header content:content footer:footer];
-    
-    return [[CommunicationData alloc]initWithInfo:dataInfo header:header content:content footer:footer];
+    return [[CommunicationData alloc]initWithType:CommunicationDataTypeString header:header content:content footer:footer];
 }
 
 #if TARGET_OS_IPHONE
@@ -54,9 +52,7 @@
     DataContent *content = [[DataContent alloc]initWithImage:image];
     DataFooter *footer = [[DataFooter alloc]init];
     
-    DataInfo *dataInfo = [[DataInfo alloc]initWithDataType:CommunicationDataTypeImage header:header content:content footer:footer];
-    
-    return [[CommunicationData alloc]initWithInfo:dataInfo header:header content:content footer:footer];
+    return [[CommunicationData alloc]initWithType:CommunicationDataTypeImage header:header content:content footer:footer];
 }
 
 #elif TARGET_OS_MAC
@@ -68,9 +64,7 @@
     DataContent *content = [[DataContent alloc]initWithImage:image];
     DataFooter *footer = [[DataFooter alloc]init];
     
-    DataInfo *dataInfo = [[DataInfo alloc]initWithDataType:CommunicationDataTypeImage header:header content:content footer:footer];
-    
-    return [[CommunicationData alloc]initWithInfo:dataInfo header:header content:content footer:footer];
+    return [[CommunicationData alloc]initWithType:CommunicationDataTypeImage header:header content:content footer:footer];
 }
 
 #endif
@@ -82,9 +76,7 @@
     DataContent *content = [[DataContent alloc]initWithFilePath:filePath];
     DataFooter *footer = [[DataFooter alloc]init];
     
-    DataInfo *dataInfo = [[DataInfo alloc]initWithDataType:CommunicationDataTypeFile header:header content:content footer:footer];
-    
-    return [[CommunicationData alloc]initWithInfo:dataInfo header:header content:content footer:footer];
+    return [[CommunicationData alloc]initWithType:CommunicationDataTypeFile header:header content:content footer:footer];
 }
 
 + (CommunicationData *)fromDictionary:(NSDictionary *)dictionary {
@@ -103,9 +95,7 @@
     DataContent *content = [[DataContent alloc]initWithData:data];
     DataFooter *footer = [[DataFooter alloc]init];
     
-    DataInfo *dataInfo = [[DataInfo alloc]initWithDataType:CommunicationDataTypeJSON header:header content:content footer:footer];
-    
-    return [[CommunicationData alloc]initWithInfo:dataInfo header:header content:content footer:footer];
+    return [[CommunicationData alloc]initWithType:CommunicationDataTypeJSON header:header content:content footer:footer];
 }
 
 + (CommunicationData *)fromData:(NSData *)data {
@@ -113,14 +103,11 @@
     DataContent *content = [[DataContent alloc]initWithData:data];
     DataFooter *footer = [[DataFooter alloc]init];
     
-    DataInfo *dataInfo = [[DataInfo alloc]initWithDataType:CommunicationDataTypeOther header:header content:content footer:footer];
-    
-    return [[CommunicationData alloc]initWithInfo:dataInfo header:header content:content footer:footer];
+    return [[CommunicationData alloc]initWithType:CommunicationDataTypeOther header:header content:content footer:footer];
 }
 
 + (CommunicationData *)terminationData {
-    DataInfo *dataInfo = [[DataInfo alloc]initWithDataType:CommunicationDataTypeTermination header:nil content:nil footer:nil];
-    return [[CommunicationData alloc]initWithInfo:dataInfo header:nil content:nil footer:nil];
+    return [[CommunicationData alloc]initWithType:CommunicationDataTypeTermination header:nil content:nil footer:nil];
 }
 
 - (CommunicationDataType)dataType {
@@ -147,6 +134,10 @@
 
 - (NSData *)dataValue {
     return [self.content getData];
+}
+
+- (id)jsonValue {
+    return [NSJSONSerialization JSONObjectWithData:[self.content getData] options:NSJSONReadingAllowFragments error:nil];
 }
 
 - (NSString *)description {

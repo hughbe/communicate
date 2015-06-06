@@ -336,9 +336,10 @@ namespace Communicate.Connections
                         }
                     }
                 }
+
                 if (dataInfo != null)
                 {
-                    CommunicationData receivedData = new CommunicationData(dataInfo, header, content, footer);
+                    CommunicationData receivedData = new CommunicationData(dataInfo.DataType, header, content, footer);
                     
                     if (dataInfo.DataType == CommunicationDataType.Termination)
                     {
@@ -464,21 +465,34 @@ namespace Communicate.Connections
 
             try
             {
-                _socket.Send(data.DataInfo.GetBytes());
-
-                if (data.DataInfo.HeaderLength > 0)
+                if (data.DataInfo != null)
                 {
-                    _socket.Send(data.DataHeader.GetBytes());
+                    _socket.Send(data.DataInfo.GetBytes());
+
                 }
 
-                if (data.DataInfo.ContentLength > 0)
+                if (data.DataHeader != null)
                 {
-                    _socket.Send(data.DataContent.GetBytes());
+                    if (data.DataInfo.HeaderLength > 0)
+                    {
+                        _socket.Send(data.DataHeader.GetBytes());
+                    }
                 }
 
-                if (data.DataInfo.FooterLength > 0)
+                if (data.DataContent != null)
                 {
-                    _socket.Send(data.DataFooter.GetBytes());
+                    if (data.DataInfo.ContentLength > 0)
+                    {
+                        _socket.Send(data.DataContent.GetBytes());
+                    }
+                }
+
+                if (data.DataFooter != null)
+                {
+                    if (data.DataInfo.FooterLength > 0)
+                    {
+                        _socket.Send(data.DataFooter.GetBytes());
+                    }
                 }
 
                 if (data.DataInfo.DataType == CommunicationDataType.Termination)

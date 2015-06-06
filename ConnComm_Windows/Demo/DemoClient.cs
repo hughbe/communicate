@@ -27,7 +27,7 @@ namespace Demo
 
         private void DemoClient_Load(object sender, EventArgs e)
         {
-            ProtocolInfo protocolInfo = new ProtocolInfo("_Test", TransportProtocolType.TCP, ProtocolInfo.ProtocolDomainLocal);
+            ProtocolInfo protocolInfo = new ProtocolInfo("Test", TransportProtocolType.TCP, ProtocolInfo.ProtocolDomainLocal);
             CommunicatorInfo communicatorInfo = new CommunicatorInfo(Environment.MachineName, 12345, null);
 
             client = new Communicator(protocolInfo, communicatorInfo);

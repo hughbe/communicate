@@ -1,5 +1,5 @@
 //
-//  ReceivedData.h
+//  CommunicationData.h
 //  Communicate
 //
 //  Created by Hugh Bellamy on 25/05/2015.
@@ -45,7 +45,7 @@
 
 + (CommunicationData *)terminationData;
 
-- (instancetype)initWithInfo:(DataInfo *)dataInfo header:(DataHeader *)header content:(DataContent *)content footer:(DataFooter *)footer;
+- (instancetype)initWithType:(CommunicationDataType)dataType header:(DataHeader *)header content:(DataContent *)content footer:(DataFooter *)footer;
 
 @property (assign, readonly, nonatomic) CommunicationDataType dataType;
 
@@ -58,5 +58,7 @@
 #endif
 
 @property (strong, readonly, nonatomic) NSData *dataValue;
+
+@property (strong, readonly, nonatomic) id jsonValue;
 
 @end

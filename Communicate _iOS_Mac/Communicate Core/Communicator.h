@@ -7,6 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
+
+@import CoreGraphics;
+
 @class ProtocolInfo, CommunicatorInfo, PublishingManager, ListeningManager, SearchingManager, ConnectionsManager, Connection, CommunicationData;
 @protocol CommunicatorDelegate;
 
@@ -79,6 +82,9 @@ extern NSString* const CommunicatorErrorDomain;
 - (void)communicator:(Communicator *)communicator didConnect:(Connection *)client;
 - (void)communicator:(Communicator *)communicator didNotConnect:(Connection *)client reason:(NSError *)reason;
 - (void)communicator:(Communicator *)communicator didDisconnect:(Connection *)client;
+
+- (void)communicator:(Communicator *)communicator didStartReceivingDataFromConnection:(Connection *)connection;
+- (void)communicator:(Communicator *)communicator didUpdateReceivingData:(CGFloat)progress fromConnection:(Connection *)connection;
 
 - (void)communicator:(Communicator *)communicator didReceiveData:(CommunicationData *)data fromConnection:(Connection *)connection;
 - (void)communicator:(Communicator *)communicator didSendData:(CommunicationData *)data toConnection:(Connection *)connection;

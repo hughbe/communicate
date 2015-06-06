@@ -92,6 +92,18 @@
     }
 }
 
+- (void)connectionDidStartReceivingData:(Connection *)connection {
+    if([self.delegate respondsToSelector:@selector(connectionsManager:didStartReceivingDataFromConnection:)]) {
+        [self.delegate connectionsManager:self didStartReceivingDataFromConnection:connection];
+    }
+}
+
+- (void)connection:(Connection *)connection didUpdateReceivingData:(CGFloat)completionValue {
+    if([self.delegate respondsToSelector:@selector(connectionsManager:didUpdateReceivingData:fromConnection:)]) {
+        [self.delegate connectionsManager:self didUpdateReceivingData:completionValue fromConnection:connection];
+    }
+}
+
 - (void)connection:(Connection *)connection didReceiveData:(CommunicationData *)data {
     if([self.delegate respondsToSelector:@selector(connectionsManager:didReceiveData:fromConnection:)]) {
         [self.delegate connectionsManager:self didReceiveData:data fromConnection:connection];

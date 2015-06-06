@@ -70,12 +70,14 @@ typedef NS_ENUM(NSInteger, ConnectionState) {
 @end
 
 @protocol ConnectionDelegate <NSObject>
-@optional
+
 - (void)connectionDidStartConnecting:(Connection *)connection;
 - (void)connectionDidConnect:(Connection *)connection;
 - (void)connectionDidNotConnect:(Connection *)connection reason:(CommunicatorErrorCode)errorCode errorDictionary:(NSDictionary *)errorDictionary;
 - (void)connectionDidDisconnect:(Connection *)connection;
 
+- (void)connectionDidStartReceivingData:(Connection *)connection ;
+- (void)connection:(Connection *)connection didUpdateReceivingData:(CGFloat)completionValue;
 - (void)connection:(Connection *)connection didReceiveData:(CommunicationData *)data;
 - (void)connection:(Connection *)connection didSendData:(CommunicationData *)data;
 

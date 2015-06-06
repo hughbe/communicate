@@ -88,11 +88,14 @@
 @end
 
 @protocol ConnectionsManagerDelegate <NSObject>
-@optional
+
 - (void)connectionsManager:(ConnectionsManager *)connectionsManager didStartConnectingToConnection:(Connection *)connection;
 - (void)connectionsManager:(ConnectionsManager *)connectionsManager didConnectToConnection:(Connection *)connection;
 - (void)connectionsManager:(ConnectionsManager *)connectionsManager didNotConnectToConnection:(Connection *)connection reason:(CommunicatorErrorCode)errorCode errorDictionary:(NSDictionary *)errorDictionary;
 - (void)connectionsManager:(ConnectionsManager *)connectionsManager didDisconnectFromConnection:(Connection *)connection;
+
+- (void)connectionsManager:(ConnectionsManager *)connectionsManager didStartReceivingDataFromConnection:(Connection *)connection;
+- (void)connectionsManager:(ConnectionsManager *)connectionsManager didUpdateReceivingData:(CGFloat)completionValue fromConnection:(Connection *)connection;
 
 - (void)connectionsManager:(ConnectionsManager *)connectionsManager didReceiveData:(CommunicationData *)data fromConnection:(Connection *)connection;
 - (void)connectionsManager:(ConnectionsManager *)connectionsManager didSendData:(CommunicationData *)data toConnection:(Connection *)connection;

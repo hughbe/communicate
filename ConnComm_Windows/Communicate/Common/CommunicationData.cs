@@ -61,10 +61,11 @@ namespace Communicate.Common
         /// <summary>
         /// The default constructor for the communication data object
         /// </summary>
+        /// <param name="dataType">The type of data to send</param>
         /// <param name="header">The header to send</param>
         /// <param name="content">The content to send</param>
         /// <param name="footer">The footer to send</param>
-        public CommunicationData(DataInfo dataInfo, DataHeader header, DataContent content, DataFooter footer)
+        public CommunicationData(CommunicationDataType dataType, DataHeader header, DataContent content, DataFooter footer)
         {
             if (header == null)
             {
@@ -78,7 +79,7 @@ namespace Communicate.Common
             {
                 footer = new DataFooter();
             }
-            _dataInfo = dataInfo;
+            _dataInfo = new DataInfo(dataType, header, content, footer);
             _dataHeader = header;
             _dataContent = content;
             _dataFooter = footer;
@@ -91,8 +92,7 @@ namespace Communicate.Common
         {
             get 
             {
-                DataInfo dataInfo = new DataInfo(CommunicationDataType.Termination, null, null, null);
-                return new CommunicationData(dataInfo, null, null, null);
+                return new CommunicationData(CommunicationDataType.Termination, null, null, null);
             }
         }
 
@@ -109,9 +109,8 @@ namespace Communicate.Common
                 DataHeader header = new DataHeader();
                 DataContent content = new DataContent(theString, encoding);
                 DataFooter footer = new DataFooter();
-                DataInfo dataInfo = new DataInfo(CommunicationDataType.String, header, content, footer);
 
-                return new CommunicationData(dataInfo, header, content, footer);
+                return new CommunicationData(CommunicationDataType.String, header, content, footer);
             }
             return null;
         }
@@ -130,10 +129,8 @@ namespace Communicate.Common
                 header.FileName = name;
                 DataContent content = new DataContent(image);
                 DataFooter footer = new DataFooter();
-
-                DataInfo dataInfo = new DataInfo(CommunicationDataType.Image, header, content, footer);
-
-                return new CommunicationData(dataInfo, header, content, footer);
+                
+                return new CommunicationData(CommunicationDataType.Image, header, content, footer);
             }
             return null;
         }
@@ -150,9 +147,7 @@ namespace Communicate.Common
             DataContent content = new DataContent(filePath);
             DataFooter footer = new DataFooter();
 
-            DataInfo dataInfo = new DataInfo(CommunicationDataType.File, header, content, footer);
-
-            return new CommunicationData(dataInfo, header, content, footer);
+            return new CommunicationData(CommunicationDataType.File, header, content, footer);
         }
         
         /// <summary>
@@ -184,9 +179,7 @@ namespace Communicate.Common
             DataContent content = new DataContent(data);
             DataFooter footer = new DataFooter();
 
-            DataInfo dataInfo = new DataInfo(CommunicationDataType.JSON, header, content, footer);
-
-            return new CommunicationData(dataInfo, header, content, footer);
+            return new CommunicationData(CommunicationDataType.JSON, header, content, footer);
         }
 
         /// <summary>
@@ -200,9 +193,7 @@ namespace Communicate.Common
             DataContent content = new DataContent(data);
             DataFooter footer = new DataFooter();
 
-            DataInfo dataInfo = new DataInfo(CommunicationDataType.Other, header, content, footer);
-
-            return new CommunicationData(dataInfo, header, content, footer);
+            return new CommunicationData(CommunicationDataType.Other, header, content, footer);
         }
 
         /// <summary>

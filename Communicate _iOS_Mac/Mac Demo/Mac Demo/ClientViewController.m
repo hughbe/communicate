@@ -13,7 +13,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     ProtocolInfo *protocol = [[ProtocolInfo alloc]initWithProtocolName:@"Test" protocolType:TransportProtocolTypeTCP domain:nil];
-    CommunicatorInfo *communicatorInfo = [[CommunicatorInfo alloc]initWithName:@"Mac" port:54321 txtRecordList:nil];
+    CommunicatorInfo *communicatorInfo = [[CommunicatorInfo alloc]initWithName:@"Mac" port:62930 txtRecordList:nil];
     self.client = [[Communicator alloc]initWithProtocolInfo:protocol communicatorInfo:communicatorInfo delegate:self];
     [self.client startSearching];
 }

@@ -19,7 +19,9 @@
 - (instancetype)initWithString:(NSString *)string {
     self = [super init];
     if(self) {
-        self.dictionary = [NSJSONSerialization JSONObjectWithData:[string dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:nil];
+        if(string) {
+            self.dictionary = [NSJSONSerialization JSONObjectWithData:[string dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:nil];
+        }
     }
     return self;
 }

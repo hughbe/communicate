@@ -172,6 +172,18 @@ NSString* const CommunicatorErrorDomain = @"com.communicator";
     }
 }
 
+- (void)connectionsManager:(ConnectionsManager *)connectionsManager didStartReceivingDataFromConnection:(Connection *)connection {
+    if([self.delegate respondsToSelector:@selector(communicator:didStartReceivingDataFromConnection:)]) {
+        [self.delegate communicator:self didStartReceivingDataFromConnection:connection];
+    }
+}
+
+- (void)connectionsManager:(ConnectionsManager *)connectionsManager didUpdateReceivingData:(CGFloat)completionValue fromConnection:(Connection *)connection {
+    if([self.delegate respondsToSelector:@selector(communicator:didUpdateReceivingData:fromConnection:)]) {
+        [self.delegate communicator:self didUpdateReceivingData:completionValue fromConnection:connection];
+    }
+}
+
 - (void)connectionsManager:(ConnectionsManager *)connectionsManager didReceiveData:(CommunicationData *)data fromConnection:(Connection *)connection {
     if([self.delegate respondsToSelector:@selector(communicator:didReceiveData:fromConnection:)]) {
         [self.delegate communicator:self didReceiveData:data fromConnection:connection];
