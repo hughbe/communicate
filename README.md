@@ -14,4 +14,4 @@ A library that allows you to send data of any type between devices simply, relia
 ##How to install
 1. TODO
 
-[logo]: https://github.com/hughbe/Cross-Platform-Bonjour-Connectivity-and-Communication-Library/blob/master/ConnComm_Windows/Screenshot.png" "Evidence"
+[logo]: https://github.com/hughbe/Cross-Platform-Bonjour-Connectivity-and-Communication-Library/blob/master/resources/screenshots/1.png" "Screenshot 1"
