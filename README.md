@@ -3,7 +3,7 @@ This library makes it easy to connect iOS, Mac and Windows devices to each other
 
 #Windows 
 ##Instructions
-1. Download the latest release from the releases section of this repository or build the libraries yourself
+1. Download the latest release from the releases section of this repository or build it yourself from the code
 2. Add the 3 class library dlls contained in the zip file as references to your project
 3. Follow the ***instructions.cs*** file for example code use and some starter code
 4. Look at the demo programs to learn more
