@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{27835CAB-36F3-4F39-B658-5B3E2616D058}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Communicate</RootNamespace>
+    <AssemblyName>Communicate Core</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>BasicCorrectnessRules.ruleset</CodeAnalysisRuleSet>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Commuicate.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization.Formatters.Soap" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common\ActionState.cs" />
+    <Compile Include="Common\State.cs" />
+    <Compile Include="Connections\ConnectionCollection.cs" />
+    <Compile Include="Connections\ConnectionState.cs" />
+    <Compile Include="Connections\Information\ConnectionInformation.cs" />
+    <Compile Include="Data\DataComponent.cs" />
+    <Compile Include="Data\DataType.cs" />
+    <Compile Include="Data\Data.cs" />
+    <Compile Include="Data\DataHeaderFooter.cs" />
+    <Compile Include="Data\DataInfo.cs" />
+    <Compile Include="Connections\Connection.cs" />
+    <Compile Include="BaseCommunicator.cs" />
+    <Compile Include="Data\Serialization\JsonObjectSerializer.cs" />
+    <Compile Include="Protocol.cs" />
+    <Compile Include="Connections\ConnectionDataEventArgs.cs" />
+    <Compile Include="Data\EncodedDataType.cs" />
+    <Compile Include="Connections\Information\Platform.cs" />
+    <Compile Include="Connections\Information\CommunicatorVersion.cs" />
+    <Compile Include="Exceptions\CommunicatorErrorCode.cs" />
+    <Compile Include="Exceptions\CommunicatorException.cs" />
+    <Compile Include="Data\Serialization\BinarySerializer.cs" />
+    <Compile Include="Data\Serialization\EmptySerializer.cs" />
+    <Compile Include="Data\Serialization\FileSerializer.cs" />
+    <Compile Include="Data\Serialization\ImageSerializer.cs" />
+    <Compile Include="Data\Serialization\SoapSerializer.cs" />
+    <Compile Include="Data\Serialization\StringSerializer.cs" />
+    <Compile Include="Data\Serialization\JsonSerializer.cs" />
+    <Compile Include="Data\Serialization\XmlSerializer.cs" />
+    <Compile Include="Publishing\TxtRecord.cs" />
+    <Compile Include="CommunicatorInformation.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Publishing\TxtRecordCollection.cs" />
+    <Compile Include="Common\RegisteredObject.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Commuicate.snk" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
