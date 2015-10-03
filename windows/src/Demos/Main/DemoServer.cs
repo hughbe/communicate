@@ -33,18 +33,18 @@ namespace Demo.Bonjour
                 }
             }
 
-            var txtRecords = new BonjourTxtRecordCollection(new Collection<TxtRecord>
+            var txtRecords =new Collection<TxtRecord>
             {
                 new TxtRecord("platform", "windows"),
                 new TxtRecord("publish_time", DateTime.Now.ToString(CultureInfo.InvariantCulture))
-            });
+            };
 
             var communicatorInformation = new CommunicatorInformation(port);
             var protocol = new Protocol("Test");
 
             _server = new BonjourCommunicator(communicatorInformation, protocol);
 
-            _server.UpdateTxtRecords(txtRecords);
+            _server.TxtRecords = txtRecords;
 
             _server.DidUpdatePublishedState += (delegateCommunicator, eventArgs) =>
             {
@@ -106,6 +106,7 @@ namespace Demo.Bonjour
                         break;
                     case ConnectionState.Connected:
                         AddHistory("Connected to Client");
+                        connection.SendInformation();
                         break;
                     case ConnectionState.Error:
                         AddHistory("Did Not Connect to Client: " + connection.ConnectionException);

@@ -33,7 +33,7 @@ namespace Communicate
 
         public string Name { get; internal set; }
 
-        public CommunicatorVersion Version { get; }
-        public Platform Platform { get; }
+        public CommunicatorVersion Version { get; internal set; } = CommunicatorVersion.CurrentVersion;
+        public Platform Platform { get; internal set; } = Platform.Windows;
     }
 }

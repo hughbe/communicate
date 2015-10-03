@@ -57,15 +57,21 @@ namespace Communicate.Bonjour
         {
             ConnectionService.DidUpdateTXT += service =>
             {
-                SetTxtRecords(new BonjourTxtRecordCollection(service.TXTRecordData));
+                SetTxtRecordsData(service.TXTRecordData);
             };
             ConnectionService.StartMonitoring();
         }
 
-        public bool Equals(BonjourConnection connection)
+        public override bool Equals(Connection other)
         {
+            var connection = other as BonjourConnection;
+            if (connection == null)
+            {
+                return base.Equals(other);
+            }
+
             var myService = ConnectionService;
-            var otherService = connection?.ConnectionService;
+            var otherService = connection.ConnectionService;
             if (myService != null && otherService != null)
             {
                 return myService.Name == otherService.Name &&

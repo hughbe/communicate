@@ -57,16 +57,21 @@ namespace Demo.Bonjour
             this.manuallyConnectNumbericUpDown = new System.Windows.Forms.NumericUpDown();
             this.manuallyConnectButton = new System.Windows.Forms.Button();
             this.ipAddressLabel = new System.Windows.Forms.Label();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.manualGroupBox = new System.Windows.Forms.GroupBox();
             this.portLabel = new System.Windows.Forms.Label();
             this.ipLabel = new System.Windows.Forms.Label();
+            this.informationGroupBox = new System.Windows.Forms.GroupBox();
+            this.informationListView = new System.Windows.Forms.ListView();
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.serializationGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.serializationNumericUpDown)).BeginInit();
             this.sendGroupBox.SuspendLayout();
             this.connectingGroupBox.SuspendLayout();
             this.txtRecordsGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.manuallyConnectNumbericUpDown)).BeginInit();
-            this.groupBox1.SuspendLayout();
+            this.manualGroupBox.SuspendLayout();
+            this.informationGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // devicesListBox
@@ -287,7 +292,7 @@ namespace Demo.Bonjour
             this.txtRecordsGroupBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtRecordsGroupBox.Location = new System.Drawing.Point(558, 12);
             this.txtRecordsGroupBox.Name = "txtRecordsGroupBox";
-            this.txtRecordsGroupBox.Size = new System.Drawing.Size(253, 294);
+            this.txtRecordsGroupBox.Size = new System.Drawing.Size(253, 141);
             this.txtRecordsGroupBox.TabIndex = 13;
             this.txtRecordsGroupBox.TabStop = false;
             this.txtRecordsGroupBox.Text = "Txt Records";
@@ -303,7 +308,7 @@ namespace Demo.Bonjour
             this.txtRecordsListView.ImeMode = System.Windows.Forms.ImeMode.Disable;
             this.txtRecordsListView.Location = new System.Drawing.Point(3, 20);
             this.txtRecordsListView.Name = "txtRecordsListView";
-            this.txtRecordsListView.Size = new System.Drawing.Size(247, 271);
+            this.txtRecordsListView.Size = new System.Drawing.Size(247, 118);
             this.txtRecordsListView.TabIndex = 0;
             this.txtRecordsListView.UseCompatibleStateImageBehavior = false;
             this.txtRecordsListView.View = System.Windows.Forms.View.Details;
@@ -368,21 +373,21 @@ namespace Demo.Bonjour
             this.ipAddressLabel.Text = "No Network Connection";
             this.ipAddressLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // groupBox1
+            // manualGroupBox
             // 
-            this.groupBox1.Controls.Add(this.portLabel);
-            this.groupBox1.Controls.Add(this.ipLabel);
-            this.groupBox1.Controls.Add(this.ipAddressLabel);
-            this.groupBox1.Controls.Add(this.manuallyConnectTextBox);
-            this.groupBox1.Controls.Add(this.manuallyConnectButton);
-            this.groupBox1.Controls.Add(this.manuallyConnectNumbericUpDown);
-            this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox1.Location = new System.Drawing.Point(12, 159);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(540, 147);
-            this.groupBox1.TabIndex = 18;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Manually Connect";
+            this.manualGroupBox.Controls.Add(this.portLabel);
+            this.manualGroupBox.Controls.Add(this.ipLabel);
+            this.manualGroupBox.Controls.Add(this.ipAddressLabel);
+            this.manualGroupBox.Controls.Add(this.manuallyConnectTextBox);
+            this.manualGroupBox.Controls.Add(this.manuallyConnectButton);
+            this.manualGroupBox.Controls.Add(this.manuallyConnectNumbericUpDown);
+            this.manualGroupBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.manualGroupBox.Location = new System.Drawing.Point(12, 159);
+            this.manualGroupBox.Name = "manualGroupBox";
+            this.manualGroupBox.Size = new System.Drawing.Size(540, 147);
+            this.manualGroupBox.TabIndex = 18;
+            this.manualGroupBox.TabStop = false;
+            this.manualGroupBox.Text = "Manually Connect";
             // 
             // portLabel
             // 
@@ -406,12 +411,50 @@ namespace Demo.Bonjour
             this.ipLabel.Text = "IP:";
             this.ipLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // informationGroupBox
+            // 
+            this.informationGroupBox.Controls.Add(this.informationListView);
+            this.informationGroupBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.informationGroupBox.Location = new System.Drawing.Point(561, 165);
+            this.informationGroupBox.Name = "informationGroupBox";
+            this.informationGroupBox.Size = new System.Drawing.Size(253, 141);
+            this.informationGroupBox.TabIndex = 14;
+            this.informationGroupBox.TabStop = false;
+            this.informationGroupBox.Text = "Information";
+            // 
+            // informationListView
+            // 
+            this.informationListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1,
+            this.columnHeader2});
+            this.informationListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.informationListView.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.informationListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.informationListView.ImeMode = System.Windows.Forms.ImeMode.Disable;
+            this.informationListView.Location = new System.Drawing.Point(3, 20);
+            this.informationListView.Name = "informationListView";
+            this.informationListView.Size = new System.Drawing.Size(247, 118);
+            this.informationListView.TabIndex = 0;
+            this.informationListView.UseCompatibleStateImageBehavior = false;
+            this.informationListView.View = System.Windows.Forms.View.Details;
+            // 
+            // columnHeader1
+            // 
+            this.columnHeader1.Text = "Key";
+            this.columnHeader1.Width = 70;
+            // 
+            // columnHeader2
+            // 
+            this.columnHeader2.Text = "Value";
+            this.columnHeader2.Width = 122;
+            // 
             // DemoClient
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(822, 556);
-            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.informationGroupBox);
+            this.Controls.Add(this.manualGroupBox);
             this.Controls.Add(this.txtRecordsGroupBox);
             this.Controls.Add(this.connectingGroupBox);
             this.Controls.Add(this.sendGroupBox);
@@ -430,8 +473,9 @@ namespace Demo.Bonjour
             this.connectingGroupBox.ResumeLayout(false);
             this.txtRecordsGroupBox.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.manuallyConnectNumbericUpDown)).EndInit();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
+            this.manualGroupBox.ResumeLayout(false);
+            this.manualGroupBox.PerformLayout();
+            this.informationGroupBox.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -463,8 +507,12 @@ namespace Demo.Bonjour
         private NumericUpDown manuallyConnectNumbericUpDown;
         private TextBox manuallyConnectTextBox;
         private Label ipAddressLabel;
-        private GroupBox groupBox1;
+        private GroupBox manualGroupBox;
         private Label portLabel;
         private Label ipLabel;
+        private GroupBox informationGroupBox;
+        private ListView informationListView;
+        private ColumnHeader columnHeader1;
+        private ColumnHeader columnHeader2;
     }
 }

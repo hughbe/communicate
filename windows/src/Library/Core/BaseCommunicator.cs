@@ -28,12 +28,7 @@ namespace Communicate
         public CommunicatorInformation CommunicatorInformation { get; }
         public Protocol Protocol { get; }
 
-        public TxtRecordCollection TxtRecords { get; private set; }
-
-        public void UpdateTxtRecords(TxtRecordCollection txtRecords)
-        {
-            TxtRecords = txtRecords;
-        }
+        public Collection<TxtRecord> TxtRecords { get; set; }
         
         public event EventHandler DidUpdatePublishedState;
 
@@ -44,6 +39,7 @@ namespace Communicate
 
         public event EventHandler<ConnectionEventArgs> DidUpdateConnectionState;
         public event EventHandler<ConnectionEventArgs> DidUpdateTxtRecords;
+        public event EventHandler<ConnectionEventArgs> DidUpdateInformation;
 
         public Func<Connection, bool> ShouldConnectToConnection { get; set; }
 
@@ -157,9 +153,12 @@ namespace Communicate
         protected abstract void HandleStartSearching();
         protected abstract void HandleStopSearching();
 
+        public abstract Collection<TxtRecord> TxtRecordsFromData(byte[] data);
+        public abstract byte[] DataFromTxtRecords(Collection<TxtRecord> txtRecords);
+
         protected void AddService(Connection service)
         {
-            if (DiscoveredServices.Contains(service) || DiscoveredServices.Contains(service))
+            if (DiscoveredServices.Contains(service))
             {
                 return;
             }
@@ -223,13 +222,13 @@ namespace Communicate
             UpdateListeningState(State.Error);
         }
 
-        protected virtual void HandleStartListening()
+        protected void HandleStartListening()
         {
             ConnectionListener.Start();
             ConnectionListener.BeginAcceptSocket(AcceptSocketCallback, ConnectionListener);
         }
 
-        protected virtual void HandleStopListening()
+        protected void HandleStopListening()
         {
             ConnectionListener.Stop();
         }
@@ -370,7 +369,14 @@ namespace Communicate
             connection.DidUpdateTxtRecords += (delegateConnection, dataArgs) =>
             {
                 var eventArgs = new ConnectionEventArgs(connection);
+                connection.TxtRecords = TxtRecordsFromData(connection.TxtRecordsData);
                 DidUpdateTxtRecords?.Invoke(this, eventArgs);
+            };
+
+            connection.DidUpdateInformation += (delegateConnection, dataArgs) =>
+            {
+                var eventArgs = new ConnectionEventArgs(connection);
+                DidUpdateInformation?.Invoke(this, eventArgs);
             };
 
             connection.DidUpdateReceivingData += (delegateConnection, dataArgs) =>

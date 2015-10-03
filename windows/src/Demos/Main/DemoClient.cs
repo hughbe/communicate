@@ -96,6 +96,22 @@ namespace Demo.Bonjour
                 txtRecordsListView.AutoResizeColumn(1, ColumnHeaderAutoResizeStyle.ColumnContent);
             };
 
+            Client.DidUpdateInformation += (communicator, eventArgs) =>
+            {
+                Invoke((MethodInvoker)(() =>
+                {
+                    informationListView.Items.Clear();
+
+                    var information = eventArgs.Connection.Information;
+
+                    informationListView.Items.Add("Version").SubItems.Add(information.Version.Name);
+                    informationListView.Items.Add("Platform").SubItems.Add(information.Platform.Name);
+
+                    informationListView.AutoResizeColumn(0, ColumnHeaderAutoResizeStyle.ColumnContent);
+                    informationListView.AutoResizeColumn(1, ColumnHeaderAutoResizeStyle.ColumnContent);
+                }));
+            };
+
             Client.StartSearchingForDevices();
             ToggleAllControls(false);
         }

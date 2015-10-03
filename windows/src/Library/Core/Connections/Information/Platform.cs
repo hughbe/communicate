@@ -2,6 +2,10 @@
 {
     public class Platform : RegisteredObject<Platform>
     {
+        internal Platform(int identifier) : base(identifier, null)
+        {
+        }
+
         internal Platform(int identifier, string name) : base(identifier, name)
         {
         }

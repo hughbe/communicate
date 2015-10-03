@@ -12,7 +12,8 @@ namespace Communicate.Serialization
             {
                 throw new ArgumentNullException(nameof(value));
             }
-            return StringSerializer.ToData(new JavaScriptSerializer().Serialize(value), Encoding.ASCII);
+            var dataString = new JavaScriptSerializer().Serialize(value);
+            return StringSerializer.ToData(dataString, Encoding.ASCII);
         }
 
         public static object FromData(byte[] data, Type extra)

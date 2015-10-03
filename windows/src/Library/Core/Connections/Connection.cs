@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -38,8 +39,9 @@ namespace Communicate
 
         protected Socket ConnectionSocket { get; private set; }
         private Thread BackgroundThread { get; set; }
-        
-        public TxtRecordCollection TxtRecords { get; private set; }
+
+        internal byte[] TxtRecordsData { get; private set; }
+        public Collection<TxtRecord> TxtRecords { get; internal set; }
     
         public virtual bool Equals(Connection other)
         {
@@ -75,7 +77,8 @@ namespace Communicate
 
         protected internal event EventHandler DidUpdateState;
         protected internal event EventHandler DidUpdateTxtRecords;
-       
+        protected internal event EventHandler DidUpdateInformation;
+
         protected internal event EventHandler<ConnectionDataEventArgs> DidUpdateReceivingData;
 
         protected internal event EventHandler<ConnectionDataEventArgs> DidUpdateSendingData;
@@ -189,9 +192,9 @@ namespace Communicate
             }
         }
 
-        protected void SetTxtRecords(TxtRecordCollection txtRecords)
+        protected void SetTxtRecordsData(byte[] txtRecordsData)
         {
-            TxtRecords = txtRecords;
+            TxtRecordsData = txtRecordsData;
             DidUpdateTxtRecords?.Invoke(this, EventArgs.Empty);
         }
 
@@ -286,7 +289,9 @@ namespace Communicate
                 }
                 else if (data.DataType == DataType.ConnectionInformation)
                 {
-                    Information = data.DataType.Deserialize<ConnectionInformation>(data.GetData());
+                    Information = (ConnectionInformation)Serialization.InformationSerializer.FromData(data.GetData());
+                    DidUpdateInformation(this, EventArgs.Empty);
+                    return;
                 }
 
                 DidUpdateReceivingData?.Invoke(this,
@@ -328,6 +333,12 @@ namespace Communicate
 
         private void ReceiveDataFooter(CommunicationData data) =>
             ReceiveDataComponent(data, data.Info.FooterLength, DataComponent.Footer, bytes => data.Footer = new DataHeaderFooter(bytes));
+
+        public void SendInformation()
+        {
+            var data = Serialization.InformationSerializer.ToData(Information);
+            SendData(new CommunicationData().WithContent(data, DataType.ConnectionInformation));
+       }
 
         public void Send(CommunicationData data)
         {
@@ -393,6 +404,10 @@ namespace Communicate
             if (data.Info?.DataType == DataType.Termination)
             {
                 Disconnect(true);
+                return;
+            }
+            else if (data.Info?.DataType == DataType.ConnectionInformation)
+            {
                 return;
             }
             DidUpdateSendingData?.Invoke(this,

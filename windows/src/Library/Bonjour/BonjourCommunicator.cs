@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
 using ZeroconfService;
 
 namespace Communicate.Bonjour
@@ -22,8 +27,6 @@ namespace Communicate.Bonjour
             }
         }
 
-        public new BonjourTxtRecordCollection TxtRecords { get; set; }
-
         private NetService PublishedService { get; set; }
         private NetServiceBrowser DevicesBrowser { get; set; }
         
@@ -40,8 +43,7 @@ namespace Communicate.Bonjour
         {
             try
             {
-                PublishedService = new NetService(null, SerializeProtocolType(),
-                           CommunicatorInformation.Name, CommunicatorInformation.Port);
+                PublishedService = new NetService(null, SerializeProtocolType(), CommunicatorInformation.Name, CommunicatorInformation.Port);
             }
             catch (DNSServiceException exception)
             {
@@ -55,7 +57,7 @@ namespace Communicate.Bonjour
                 return;
             }
 
-            PublishedService.TXTRecordData = TxtRecords?.Serialize();
+            PublishedService.TXTRecordData = DataFromTxtRecords(TxtRecords);
 
             PublishedService.DidPublishService += netService =>
             {
@@ -128,6 +130,29 @@ namespace Communicate.Bonjour
         protected override void HandleStopSearching()
         {
             DevicesBrowser.Stop();
+        }
+
+
+        public override Collection<TxtRecord> TxtRecordsFromData(byte[] data)
+        {
+            var txtRecords = new Collection<TxtRecord>();
+
+            var dictionary = NetService.DictionaryFromTXTRecordData(data);
+            foreach (DictionaryEntry entry in dictionary)
+            {
+                var key = entry.Key as string;
+                var value = entry.Value as byte[];
+                var txtRecord = new TxtRecord(key, Encoding.ASCII.GetString(value));
+                txtRecords.Add(txtRecord);
+            }
+
+            return txtRecords;
+        }
+
+        public override byte[] DataFromTxtRecords(Collection<TxtRecord> txtRecords)
+        {
+            var records = txtRecords.ToDictionary(record => record.Key, record => record.Value);
+            return NetService.DataFromTXTRecordDictionary(records);
         }
 
         public override string SerializeProtocolType() => "_" + Protocol.Name + "._" + Protocol.TransportString;

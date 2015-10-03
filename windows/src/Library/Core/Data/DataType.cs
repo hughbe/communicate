@@ -102,7 +102,7 @@ namespace Communicate
         public static DataType KeyedArray => new DataType(63, "Keyed Array").Register();
 
         public static DataType Other => new DataType(99, "Other").Register();
-        public static DataType ConnectionInformation => new DataType(100, "Connection Information").Register(typeof(JsonObjectSerializer<ConnectionInformation>));
+        public static DataType ConnectionInformation => new DataType(100, "Connection Information").Register(typeof(InformationSerializer)).Register();
         public static DataType Termination => new DataType(0, "Termination").Register();
     }
 }
