@@ -1,4 +1,4 @@
-# Communicate - a cross-platform connectivity and communication library with support for Bonjour
+# Communicate
 This library makes it easy to connect iOS, Mac and Windows devices to each other and send data of any type between devices simply, reliably and effectively.
 
 #Windows 
