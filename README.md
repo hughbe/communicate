@@ -1,6 +1,8 @@
 # Communicate
 This library makes it easy to connect iOS, Mac and Windows devices to each other and send data of any type between devices simply, reliably and effectively.
 
+[![Build Status](https://travis-ci.org/hughbe/communicate.svg?branch=master)](https://travis-ci.org/hughbe/communicate)
+
 #Windows 
 ##Instructions
 1. Download the latest release from the releases section of this repository or build it yourself from the code
