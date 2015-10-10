@@ -12,13 +12,13 @@ namespace Communicate
         {
             Data = data;
             Component = component;
-            State = state;
+            DataState = state;
             Progress = progress;
         }
 
         public CommunicationData Data { get; }
         public DataComponent Component { get; } = DataComponent.None;
-        public ActionState State { get; } = ActionState.None;
+        public ActionState DataState { get; } = ActionState.None;
         public float Progress { get; } = 1;
     }
 

@@ -77,7 +77,7 @@ namespace Demo.Bonjour
             {
                 if (eventArgs.Component == DataComponent.All)
                 {
-                    if (eventArgs.State == ActionState.Completed)
+                    if (eventArgs.DataState == ActionState.Completed)
                     {
                         HandleReceivedData(eventArgs.Data);
                     }

@@ -129,7 +129,7 @@ namespace Demo.Bonjour
             {
                 if (eventArgs.Component == DataComponent.Content)
                 {
-                    if (eventArgs.State == ActionState.Updating)
+                    if (eventArgs.DataState == ActionState.Updating)
                     {
                         receivingProgressBar.Invoke(
                             (MethodInvoker) (() => receivingProgressBar.Value = (int) (eventArgs.Progress*100)));
@@ -137,7 +137,7 @@ namespace Demo.Bonjour
                 }
                 else if (eventArgs.Component == DataComponent.All)
                 {
-                    if (eventArgs.State == ActionState.Completed)
+                    if (eventArgs.DataState == ActionState.Completed)
                     {
                         receivingProgressBar.Invoke(
                             (MethodInvoker) (() => HandleReceivedData(eventArgs.Data)));

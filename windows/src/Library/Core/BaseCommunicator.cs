@@ -387,14 +387,14 @@ namespace Communicate
             connection.DidUpdateReceivingData += (delegateConnection, dataArgs) =>
             {
                 var eventArgs = new ConnectionEventArgs(connection, dataArgs.Data,
-                    dataArgs.Component, dataArgs.State, dataArgs.Progress);
+                    dataArgs.Component, dataArgs.DataState, dataArgs.Progress);
                 DidUpdateReceivingData?.Invoke(this, eventArgs);
             };
 
             connection.DidUpdateSendingData += (delegateConnection, dataArgs) =>
             {
                 var eventArgs = new ConnectionEventArgs(connection, dataArgs.Data,
-                    dataArgs.Component, dataArgs.State, dataArgs.Progress);
+                    dataArgs.Component, dataArgs.DataState, dataArgs.Progress);
                 DidUpdateSendingData?.Invoke(this, eventArgs);
             };
         }
