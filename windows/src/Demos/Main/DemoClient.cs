@@ -33,13 +33,13 @@ namespace Demo.Bonjour
             }
 
             var communicatorInformation = new CommunicatorInformation(port);
-            var protocol = new Protocol("Test");
+            var protocol = new CommunicatorProtocol("Test");
 
             Client = new BonjourCommunicator(communicatorInformation, protocol);
 
             Client.DidUpdateConnectionState += (communicator, eventArgs) =>
             {
-                var connection = eventArgs.Connection;
+                var connection = eventArgs.ActiveConnection;
                 Console.WriteLine(connection.State);
                 switch (connection.State)
                 {
@@ -75,9 +75,9 @@ namespace Demo.Bonjour
 
             Client.DidUpdateReceivingData += (communicator, eventArgs) =>
             {
-                if (eventArgs.DataComponent == DataComponent.All)
+                if (eventArgs.Component == DataComponent.All)
                 {
-                    if (eventArgs.ActionState == ActionState.Completed)
+                    if (eventArgs.State == ActionState.Completed)
                     {
                         HandleReceivedData(eventArgs.Data);
                     }
@@ -88,7 +88,7 @@ namespace Demo.Bonjour
             {
                 txtRecordsListView.Items.Clear();
 
-                foreach (var txtRecord in eventArgs.Connection.TxtRecords.ToList())
+                foreach (var txtRecord in eventArgs.ActiveConnection.TxtRecords.ToList())
                 {
                     txtRecordsListView.Items.Add(txtRecord.Key).SubItems.Add(txtRecord.Value);
                 }
@@ -102,7 +102,7 @@ namespace Demo.Bonjour
                 {
                     informationListView.Items.Clear();
 
-                    var information = eventArgs.Connection.Information;
+                    var information = eventArgs.ActiveConnection.Information;
 
                     informationListView.Items.Add("Version").SubItems.Add(information.Version.Name);
                     informationListView.Items.Add("Platform").SubItems.Add(information.Platform.Name);

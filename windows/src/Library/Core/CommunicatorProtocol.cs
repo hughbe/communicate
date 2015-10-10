@@ -5,16 +5,16 @@
         Tcp
     }
 
-    public class Protocol
+    public class CommunicatorProtocol
     {
         public string Name { get; }
         public ProtocolTransport Transport { get; }
 
-        public Protocol(string name) : this(name, ProtocolTransport.Tcp)
+        public CommunicatorProtocol(string name) : this(name, ProtocolTransport.Tcp)
         {
         }
 
-        protected Protocol(string name, ProtocolTransport transport)
+        protected CommunicatorProtocol(string name, ProtocolTransport transport)
         {
             Name = name;
             Transport = transport;

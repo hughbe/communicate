@@ -40,11 +40,11 @@ namespace Demo.Bonjour
             };
 
             var communicatorInformation = new CommunicatorInformation(port);
-            var protocol = new Protocol("Test");
+            var protocol = new CommunicatorProtocol("Test");
 
             _server = new BonjourCommunicator(communicatorInformation, protocol);
 
-            _server.TxtRecords = txtRecords;
+            _server.SetTxtRecords(txtRecords);
 
             _server.DidUpdatePublishedState += (delegateCommunicator, eventArgs) =>
             {
@@ -92,7 +92,7 @@ namespace Demo.Bonjour
 
             _server.DidUpdateConnectionState += (communicator, eventArgs) =>
             {
-                var connection = eventArgs.Connection;
+                var connection = eventArgs.ActiveConnection;
                 switch (connection.State)
                 {
                     case ConnectionState.NotConnected:
@@ -122,22 +122,22 @@ namespace Demo.Bonjour
             _server.DidUpdateTxtRecords += (communicator, eventArgs) =>
             {
                 Console.WriteLine("Received TxtRecords");
-                Console.WriteLine(eventArgs.Connection.TxtRecords);
+                Console.WriteLine(eventArgs.ActiveConnection.TxtRecords);
             };
 
             _server.DidUpdateReceivingData += (communicator, eventArgs) =>
             {
-                if (eventArgs.DataComponent == DataComponent.Content)
+                if (eventArgs.Component == DataComponent.Content)
                 {
-                    if (eventArgs.ActionState == ActionState.Updating)
+                    if (eventArgs.State == ActionState.Updating)
                     {
                         receivingProgressBar.Invoke(
                             (MethodInvoker) (() => receivingProgressBar.Value = (int) (eventArgs.Progress*100)));
                     }
                 }
-                else if (eventArgs.DataComponent == DataComponent.All)
+                else if (eventArgs.Component == DataComponent.All)
                 {
-                    if (eventArgs.ActionState == ActionState.Completed)
+                    if (eventArgs.State == ActionState.Completed)
                     {
                         receivingProgressBar.Invoke(
                             (MethodInvoker) (() => HandleReceivedData(eventArgs.Data)));

@@ -261,7 +261,7 @@ namespace Communicate
             Info.FooterLength = GetLength(Footer.GetData());
         }
 
-        private int GetLength(byte[] data) => data?.Length ?? 0;
+        private static int GetLength(byte[] data) => data?.Length ?? 0;
 
         public T GetObject<T>(DataType dataType)
         {

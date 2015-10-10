@@ -10,7 +10,7 @@ namespace Communicate.Bonjour
 {
     public class BonjourCommunicator : BaseCommunicator
     {
-        public BonjourCommunicator(CommunicatorInformation communicatorInformation, Protocol protocol) : base(communicatorInformation, protocol)
+        public BonjourCommunicator(CommunicatorInformation communicatorInformation, CommunicatorProtocol protocol) : base(communicatorInformation, protocol)
         {
             try
             {
@@ -43,7 +43,7 @@ namespace Communicate.Bonjour
         {
             try
             {
-                PublishedService = new NetService(null, SerializeProtocolType(), CommunicatorInformation.Name, CommunicatorInformation.Port);
+                PublishedService = new NetService(null, SerializeProtocolType(), Information.Name, Information.Port);
             }
             catch (DNSServiceException exception)
             {

@@ -62,7 +62,7 @@
     <Compile Include="BaseCommunicator.cs" />
     <Compile Include="Data\Serialization\InformationSerializer.cs" />
     <Compile Include="Data\Serialization\JsonObjectSerializer.cs" />
-    <Compile Include="Protocol.cs" />
+    <Compile Include="CommunicatorProtocol.cs" />
     <Compile Include="Connections\ConnectionDataEventArgs.cs" />
     <Compile Include="Data\EncodedDataType.cs" />
     <Compile Include="Connections\Information\Platform.cs" />

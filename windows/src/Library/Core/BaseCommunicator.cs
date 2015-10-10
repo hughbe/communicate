@@ -7,28 +7,33 @@ namespace Communicate
 {
     public abstract class BaseCommunicator : IDisposable
     {
-        protected BaseCommunicator(CommunicatorInformation communicatorInformation, Protocol protocol)
+        protected BaseCommunicator(CommunicatorInformation information, CommunicatorProtocol protocol)
         {
             RegisteredObjects.RegisterObjects();
-            if (communicatorInformation == null)
+            if (information == null)
             {
-                throw new ArgumentNullException(nameof(communicatorInformation));
+                throw new ArgumentNullException(nameof(information));
             }
             if (protocol == null)
             {
                 throw new ArgumentNullException(nameof(protocol));
             }
 
-            CommunicatorInformation = communicatorInformation;
+            Information = information;
             Protocol = protocol;
 
-            ConnectionListener = new TcpListener(IPAddress.Any, CommunicatorInformation.Port);
+            ConnectionListener = new TcpListener(IPAddress.Any, Information.Port);
         }
 
-        public CommunicatorInformation CommunicatorInformation { get; }
-        public Protocol Protocol { get; }
+        public CommunicatorInformation Information { get; }
+        public CommunicatorProtocol Protocol { get; }
 
-        public Collection<TxtRecord> TxtRecords { get; set; }
+        public Collection<TxtRecord> TxtRecords { get; private set; }
+
+        public void SetTxtRecords(Collection<TxtRecord> txtRecords)
+        {
+            TxtRecords = txtRecords;
+        }
         
         public event EventHandler DidUpdatePublishedState;
 
@@ -382,14 +387,14 @@ namespace Communicate
             connection.DidUpdateReceivingData += (delegateConnection, dataArgs) =>
             {
                 var eventArgs = new ConnectionEventArgs(connection, dataArgs.Data,
-                    dataArgs.DataComponent, dataArgs.ActionState, dataArgs.Progress);
+                    dataArgs.Component, dataArgs.State, dataArgs.Progress);
                 DidUpdateReceivingData?.Invoke(this, eventArgs);
             };
 
             connection.DidUpdateSendingData += (delegateConnection, dataArgs) =>
             {
                 var eventArgs = new ConnectionEventArgs(connection, dataArgs.Data,
-                    dataArgs.DataComponent, dataArgs.ActionState, dataArgs.Progress);
+                    dataArgs.Component, dataArgs.State, dataArgs.Progress);
                 DidUpdateSendingData?.Invoke(this, eventArgs);
             };
         }

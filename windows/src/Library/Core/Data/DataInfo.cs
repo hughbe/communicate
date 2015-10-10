@@ -25,8 +25,6 @@ namespace Communicate
 
         public static int DataInfoSize { get; } = 16;
 
-        private static int GetLength(byte[] data) => data?.Length ?? 0;
-
         public byte[] GetData() =>
             Combine(DataType.GetBytes(),
                     BitConverter.GetBytes(HeaderLength),

@@ -22,7 +22,7 @@ namespace ScreenCaptureExample
         private void DemoClient_Load(object sender, EventArgs e)
         {
             var communicatorInformation = new CommunicatorInformation(12345);
-            var protocol = new Protocol("Test");
+            var protocol = new CommunicatorProtocol("Test");
 
             Client = new BonjourCommunicator(communicatorInformation, protocol);
 
@@ -38,7 +38,7 @@ namespace ScreenCaptureExample
 
             Client.DidUpdateConnectionState += (communicator, eventArgs) =>
             {
-                var connection = eventArgs.Connection;
+                var connection = eventArgs.ActiveConnection;
                 if (connection.State == ConnectionState.Connected)
                 {
                     TakingScreenshots = true;

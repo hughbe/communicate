@@ -17,15 +17,15 @@ namespace ScreenCaptureExample
         private void Screen_Load(object sender, EventArgs e)
         {
             var communicatorInformation = new CommunicatorInformation(54321);
-            var protocol = new Protocol("Test");
+            var protocol = new CommunicatorProtocol("Test");
 
             Server = new BonjourCommunicator(communicatorInformation, protocol);
 
             Server.DidUpdateReceivingData += (commuunicator, eventArgs) =>
             {
-                if (eventArgs.DataComponent == DataComponent.All)
+                if (eventArgs.Component == DataComponent.All)
                 {
-                    if (eventArgs.ActionState == ActionState.Completed)
+                    if (eventArgs.State == ActionState.Completed)
                     {
                         HandleReceivedData(eventArgs.Data);
                     }
