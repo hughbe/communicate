@@ -60,7 +60,7 @@
     <Reference Include="System" />
     <Reference Include="ZeroconfService, Version=0.6.0.0, Culture=neutral, PublicKeyToken=ef0166e659f170f0, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\ZeroconfService.0.6.0.0\lib\net40\ZeroconfService.dll</HintPath>
+      <HintPath>.\ZeroconfService.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
